@@ -4,6 +4,99 @@ Modern AI is best understood as a set of overlapping problem framings rather tha
 
 The same real system often combines many of them. A search assistant may use retrieval, ranking, embeddings, LLM generation, calibration, experimentation, privacy constraints, and production monitoring. A recommender may use supervised learning, matrix factorization, sequence models, bandits, causal evaluation, and ML systems infrastructure.
 
+## Field Connection Diagram
+
+The diagram below treats each area as a problem framing. The edge labels name the shared concepts that make the connection useful in real systems.
+
+```mermaid
+flowchart LR
+  subgraph Predict["Prediction and supervised structure"]
+    SL["Supervised Learning<br/>labels -> prediction"]
+    TE["Trees, Ensembles,<br/>and Tabular ML"]
+  end
+
+  subgraph Prob["Uncertainty and hidden structure"]
+    PM["Probabilistic Modeling<br/>uncertainty -> inference"]
+    GLV["Graphical Models<br/>and Latent Variables"]
+    SAI["Sampling and<br/>Approximate Inference"]
+  end
+
+  subgraph Rep["Representations and neural function approximation"]
+    RLN["Representation Learning<br/>features -> embeddings"]
+    DL["Deep Learning<br/>differentiable models"]
+    SEQ["Sequence, Time-Series,<br/>and State Models"]
+  end
+
+  subgraph Decision["Selection, generation, and action"]
+    RLB["Reinforcement Learning<br/>and Bandits"]
+    IRR["Information Retrieval,<br/>Ranking, and Recommenders"]
+    GEN["Generative AI<br/>and Foundation Models"]
+    CI["Causal Inference<br/>and Experimentation"]
+  end
+
+  subgraph Operate["Operation and constraints"]
+    MLS["ML Systems<br/>and MLOps"]
+    RAI["Responsible, Private,<br/>and Robust AI"]
+  end
+
+  SL -->|specialized supervised models<br/>for structured data| TE
+  SL -->|losses, likelihoods,<br/>calibration, priors| PM
+  SL -->|neural predictors<br/>learn features| DL
+  SL -->|pointwise, pairwise,<br/>and listwise relevance| IRR
+  SL -->|prediction can guide<br/>but not prove interventions| CI
+
+  TE -->|GBDT baselines,<br/>tabular production data| MLS
+  TE -->|LambdaMART and<br/>boosted rankers| IRR
+  TE -->|leaf indices can become<br/>downstream features| RLN
+
+  PM -->|hidden variables,<br/>dependency assumptions| GLV
+  PM -->|posteriors and expectations<br/>need approximation| SAI
+  PM -->|explicit data distributions<br/>enable generation| GEN
+  PM -->|uncertainty-aware<br/>decision-making| RLB
+  PM -->|calibration, risk,<br/>and noisy labels| SL
+
+  GLV -->|HMMs and state-space<br/>models use latent state| SEQ
+  GLV -->|matrix factorization<br/>and latent factors| IRR
+  GLV -->|VAEs combine latent variables<br/>with neural decoders| GEN
+  GLV -->|structured hidden codes| RLN
+
+  SAI -->|Monte Carlo estimates<br/>future trajectory values| RLB
+  SAI -->|generation is sampling from<br/>learned distributions| GEN
+  SAI -->|VI and amortized inference<br/>train VAEs| RLN
+
+  RLN -->|embeddings and features<br/>for downstream models| SL
+  RLN -->|hidden layers scale<br/>feature learning| DL
+  RLN -->|dense retrieval and<br/>two-tower embeddings| IRR
+  RLN -->|pretraining, contrastive learning,<br/>and multimodal embeddings| GEN
+
+  DL -->|RNNs, LSTMs,<br/>attention, transformers| SEQ
+  DL -->|transformers, diffusion,<br/>GANs, VAEs| GEN
+  DL -->|deep rankers and<br/>neural retrieval| IRR
+  DL -->|policies and value functions<br/>as neural approximators| RLB
+  DL -->|model size, latency,<br/>and serving cost| MLS
+
+  SEQ -->|state transitions<br/>define MDP dynamics| RLB
+  SEQ -->|session and next-item<br/>recommendation| IRR
+  SEQ -->|autoregressive token<br/>and time-step prediction| GEN
+
+  RLB -->|exploration in recommendations,<br/>ads, and personalization| IRR
+  RLB -->|preference optimization<br/>and RLHF| GEN
+  RLB -->|policies create interventions<br/>and logged-data bias| CI
+
+  IRR -->|RAG grounds generation<br/>with retrieved context| GEN
+  IRR -->|logged feedback, position bias,<br/>counterfactual evaluation| CI
+  IRR -->|ANN search, serving,<br/>metrics, feedback loops| MLS
+
+  GEN -->|LLM products need<br/>evaluation and serving| MLS
+  GEN -->|hallucination, prompt injection,<br/>misuse, alignment| RAI
+
+  CI -->|A/B tests and guardrails<br/>validate product impact| MLS
+  CI -->|fairness, harm, and policy<br/>need causal measurement| RAI
+
+  MLS -->|monitoring, privacy review,<br/>rollback, governance| RAI
+  RAI -->|constraints shape data,<br/>training, evaluation, serving| MLS
+```
+
 ## Supervised Learning
 
 Supervised learning is the classical foundation: learn a mapping from inputs to labels using examples. It includes regression, classification, ranking-style scoring, logistic regression, SVMs, trees, ensembles, and supervised neural networks.
