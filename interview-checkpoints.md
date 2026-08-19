@@ -9,6 +9,13 @@ Use these prompts to test whether each area is part of your working knowledge.
 - When would Naive Bayes outperform a more flexible model?
 - How do you model missing or noisy labels?
 
+## Conformal Prediction
+
+- Why is the coverage guarantee distribution-free and finite-sample rather than asymptotic?
+- What does exchangeability buy you, and where does it break?
+- Compare split conformal and full conformal on cost and exactness.
+- Why does a valid prediction set not imply a useful (narrow) one?
+
 ## Graphical Models And Latent Variables
 
 - What is a latent variable?

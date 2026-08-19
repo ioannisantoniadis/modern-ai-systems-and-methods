@@ -9,6 +9,7 @@ Read:
 1. `topics/04-probabilistic-modeling.md`
 2. `topics/05-graphical-latent-variable-models.md`
 3. `topics/06-sampling-approximate-inference.md`
+4. `topics/16-conformal-prediction.md`
 
 Be able to explain:
 
@@ -17,12 +18,14 @@ Be able to explain:
 - Generative versus discriminative modeling.
 - Why inference becomes hard.
 - How EM, MCMC, and variational inference differ.
+- Why conformal prediction's coverage guarantee doesn't require a probabilistic model at all.
 
 Practice prompts:
 
 - "How would you model missing labels probabilistically?"
 - "What is a latent variable model?"
 - "Why do we need sampling?"
+- "How would you add a reliability guarantee to a model you can't retrain as Bayesian?"
 
 ## Phase 2: State, Sequences, And Dynamics
 

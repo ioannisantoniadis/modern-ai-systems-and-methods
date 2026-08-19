@@ -10,6 +10,7 @@ Core methods:
 - Trees, random forests, gradient boosting.
 - Neural networks and deep supervised learning.
 - Calibration, uncertainty, class imbalance, feature engineering.
+- Conformal prediction for distribution-free, model-agnostic prediction sets.
 
 Use when: labels are available and the task is prediction, classification, ranking, or regression.
 

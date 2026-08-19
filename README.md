@@ -33,6 +33,7 @@ Use the topic spine first, then deepen selectively:
 | Causal inference and experimentation | `topics/13-causal-inference-experimentation.md` |
 | ML systems and MLOps | `topics/14-ml-systems-mlops.md` |
 | Responsible, private, and robust AI | `topics/15-responsible-private-robust-ai.md` |
+| Conformal prediction | `topics/16-conformal-prediction.md` |
 
 ## Mental Model
 

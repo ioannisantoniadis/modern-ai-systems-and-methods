@@ -3,6 +3,7 @@
 - Amortized inference: learning a model that predicts approximate posterior parameters directly.
 - Bayesian inference: updating beliefs using likelihood and prior.
 - Confounder: variable affecting both treatment and outcome.
+- Conformal prediction: model-agnostic method producing prediction sets with a finite-sample, distribution-free coverage guarantee under exchangeability.
 - Contrastive learning: representation learning by comparing positive and negative pairs.
 - EM: algorithm alternating hidden-variable inference and parameter updates.
 - HMM: hidden Markov model with latent states and observed emissions.
