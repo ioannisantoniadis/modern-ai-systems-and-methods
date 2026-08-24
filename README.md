@@ -1,72 +1,72 @@
 # Modern AI Systems and Methods
 
-A map-style learning repository for the main directions, domains, and techniques in modern machine learning and AI.
+A field guide to how modern AI actually fits together — nineteen chapters
+from supervised learning through agents, evaluation, and responsible AI, each
+with real computed visualizations and each explicitly linked to the chapters
+around it.
 
-The goal is not to replace textbooks. The goal is to build a practical mental map: what each method is, when to use it, how it connects to other methods, what assumptions it makes, and what interview or research questions might expose gaps.
+- Site: **[ioannisantoniadis.github.io/modern-ai-systems-and-methods](https://ioannisantoniadis.github.io/modern-ai-systems-and-methods/)**
 
-## How To Use This Repo
+## What this is
 
-Use the topic spine first, then deepen selectively:
+Most AI content is either a glossary (accurate, forgettable) or a hype piece
+(memorable, thin). This tries for a third thing: explain the mechanism behind
+each idea well enough that you could re-derive it, show it working on real —
+if small — computed data instead of a decorative diagram, and be explicit
+about how each idea depends on and feeds into its neighbors. A recommender
+system is not "collaborative filtering" in isolation; it's supervised
+ranking, matrix factorization, sequence modeling, bandit exploration, and
+causal evaluation of biased logs, composed. This book tries to make that kind
+of composition visible everywhere it happens.
 
-1. Read `learning-map.md` to understand the full landscape.
-2. Use `gap-based-path.md` if you already know supervised learning, ranking, deep learning, recommender systems, and GenAI but want to fill probabilistic modeling, sampling, RL, and state-model gaps.
-3. Read topic pages in order when you want broad coverage.
-4. Use `interview-checkpoints.md` to test whether you can explain each area under pressure.
-5. Add deeper notes with `templates/topic-note.md` and `templates/method-card.md`.
+## Contents
 
-## Topic Spine
+Start with [**the map**](https://ioannisantoniadis.github.io/modern-ai-systems-and-methods/chapters/00-landscape-and-map.html)
+for the whole landscape in one page, including a real force-directed graph of
+how every chapter connects to its neighbors. Then, grouped by the question
+each part answers:
 
-| Area | File |
-| --- | --- |
-| AI and ML landscape | `topics/01-ai-ml-landscape.md` |
-| Supervised learning foundations | `topics/02-supervised-learning-foundations.md` |
-| Trees, ensembles, and tabular ML | `topics/03-trees-ensembles-tabular.md` |
-| Probabilistic modeling | `topics/04-probabilistic-modeling.md` |
-| Graphical models and latent variables | `topics/05-graphical-latent-variable-models.md` |
-| Sampling and approximate inference | `topics/06-sampling-approximate-inference.md` |
-| Representation learning and autoencoders | `topics/07-representation-learning-autoencoders.md` |
-| Deep learning foundations | `topics/08-deep-learning-foundations.md` |
-| Sequence, time-series, and state models | `topics/09-sequence-time-series-state-models.md` |
-| Reinforcement learning and bandits | `topics/10-reinforcement-learning-bandits.md` |
-| Information retrieval, ranking, and recommendations | `topics/11-ir-ranking-recommenders.md` |
-| Generative AI and foundation models | `topics/12-generative-ai-foundation-models.md` |
-| Causal inference and experimentation | `topics/13-causal-inference-experimentation.md` |
-| ML systems and MLOps | `topics/14-ml-systems-mlops.md` |
-| Responsible, private, and robust AI | `topics/15-responsible-private-robust-ai.md` |
-| Conformal prediction | `topics/16-conformal-prediction.md` |
+**Prediction from labeled data** — Supervised Learning · Trees, Ensembles, and Tabular ML
 
-## Mental Model
+**Uncertainty and hidden structure** — Probabilistic Modeling · Graphical Models and Latent Variables · Sampling and Approximate Inference
 
-Most AI methods can be located by five questions:
+**Representations and function approximation** — Representation Learning · Deep Learning Foundations · Sequence, Time-Series, and State Models · Graph Neural Networks
 
-- What is observed, and what is hidden?
-- Is the goal prediction, generation, decision-making, discovery, or causal estimation?
-- Are labels available, weak, delayed, biased, or missing?
-- Is uncertainty central or incidental?
-- Does the method need to run as a product system with latency, privacy, monitoring, and feedback loops?
+**Decisions, selection, and generation** — Reinforcement Learning and Bandits · Information Retrieval, Ranking, and Recommenders · Generative AI and Foundation Models · AI Agents, Tool Use, and Multi-Agent Systems
 
-## Gap-Filling Priorities
+**Knowing whether it works** — Evaluation and Benchmarking · Causal Inference and Experimentation · Conformal Prediction
 
-Given a background in ranking, deep learning, recommender systems, GenAI, logistic regression, and tree ensembles, the highest-leverage gaps are:
+**Operating it in the world** — ML Systems and MLOps · Responsible, Private, and Robust AI
 
-1. Probabilistic modeling: Bayes rule, likelihoods, priors, posteriors, uncertainty, latent variables.
-2. Sampling and approximate inference: Monte Carlo, MCMC, Gibbs, Metropolis-Hastings, variational inference.
-3. State and sequence models: Markov chains, HMMs, state-space models, time-series forecasting.
-4. Reinforcement learning: MDPs, value functions, Q-learning, policy gradients, bandits, offline RL.
-5. Representation learning beyond standard embeddings: PCA, matrix factorization, autoencoders, VAEs, contrastive learning.
-6. Causal inference: treatment effects, confounding, causal graphs, counterfactuals.
+## Repository layout
 
-## Repository Philosophy
+```
+docs/                 Quarto book — the site source
+  _quarto.yml          book config, chapter order, theme
+  chapters/*.qmd        the 19 chapters
+  appendix-*.qmd        glossary, further reading
+  images/                pre-generated static figures
+scripts/figures/       one small standalone script per figure — real
+                        computed output (numpy/scikit-learn/networkx/
+                        matplotlib), not decorative diagrams
+```
 
-Each topic should answer:
+Every figure is a real computation on toy or synthetic data — a fitted
+decision boundary, an MCMC trace, a value-iteration heatmap, a diffusion
+process actually run forward and backward — generated by a short, readable
+script in `scripts/figures/` and rendered as a static image. See
+[`scripts/figures/README.md`](scripts/figures/README.md) to regenerate one.
 
-- What is the idea?
-- What problem does it solve?
-- What assumptions does it make?
-- How does it relate to other methods?
-- What should I be able to derive or explain?
-- Where does it show up in modern AI systems?
+## Building the site locally
+
+Needs the [Quarto CLI](https://quarto.org/docs/get-started/) (no Python
+execution is required to render — figures are pre-generated static assets):
+
+```bash
+quarto preview docs   # live-reloading local preview
+quarto render docs    # one-shot build to docs/_site/
+```
 
 ## License
 
-MIT License. See `LICENSE`.
+MIT License. See [`LICENSE`](LICENSE).

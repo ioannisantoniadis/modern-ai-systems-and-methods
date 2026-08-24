@@ -1,0 +1,193 @@
+---
+title: "Glossary"
+---
+
+Short, precise definitions for terms used across chapters. Each chapter
+explains its own core concepts in depth — this page is for the term you half
+remember from three chapters ago, not a substitute for reading the chapter.
+
+**Actor-critic** — a reinforcement learning architecture that learns a policy
+(actor) and a value function (critic) together, using the critic's estimate
+to reduce the variance of the policy gradient. See [RL and
+Bandits](chapters/10-reinforcement-learning-bandits.qmd).
+
+**Amortized inference** — training a model (usually a neural network) to
+predict approximate posterior parameters directly from data, so inference at
+test time is a single forward pass instead of an optimization or sampling
+loop. The mechanism behind a VAE's encoder.
+
+**Attention** — a mechanism that computes a weighted average over a set of
+values, with weights determined by how well a query matches each item's key.
+The core operation inside a transformer. See [Deep Learning
+Foundations](chapters/07-deep-learning-foundations.qmd).
+
+**Bayesian inference** — updating a prior belief into a posterior belief
+using observed data and Bayes' rule: posterior is proportional to likelihood
+times prior. See [Probabilistic Modeling](chapters/03-probabilistic-modeling.qmd).
+
+**Benchmark contamination** — when a model's training data overlaps with a
+benchmark's test data (directly or via near-duplicates), inflating scores
+without a real capability gain. See [Evaluation and
+Benchmarking](chapters/14-evaluation-and-benchmarking.qmd).
+
+**Bias-variance tradeoff** — the decomposition of a model's expected error
+into bias (error from wrong assumptions/underfitting) and variance (error
+from sensitivity to the training sample/overfitting); reducing one usually
+increases the other. See [Supervised Learning](chapters/01-supervised-learning.qmd).
+
+**Calibration** — the property that a model's predicted probabilities match
+observed frequencies (a model that says "70% confident" is right about 70% of
+the time it says so). See [Evaluation and
+Benchmarking](chapters/14-evaluation-and-benchmarking.qmd).
+
+**Conformal prediction** — a model-agnostic wrapper that produces prediction
+sets or intervals with a finite-sample, distribution-free coverage guarantee,
+under the assumption of exchangeability between calibration and test data.
+See [Conformal Prediction](chapters/16-conformal-prediction.qmd).
+
+**Confounder** — a variable that influences both the treatment/exposure and
+the outcome, creating a spurious association between them if not controlled
+for. See [Causal Inference](chapters/15-causal-inference-experimentation.qmd).
+
+**Contrastive learning** — a representation-learning method that trains
+embeddings to pull "positive" pairs (augmented views of the same item, or
+paired modalities) together and push "negative" pairs apart, without needing
+explicit labels. See [Representation Learning](chapters/06-representation-learning.qmd).
+
+**Denoising diffusion model** — a generative model trained to reverse a fixed
+process that gradually adds noise to data, learning to remove noise
+step-by-step until samples resemble the data distribution. See [Generative AI
+and Foundation Models](chapters/12-generative-ai-foundation-models.qmd).
+
+**Differential privacy** — a mathematical guarantee that a computation's
+output distribution changes only slightly whether or not any single
+individual's data is included, typically achieved by adding calibrated
+noise. See [Responsible, Private, and Robust
+AI](chapters/18-responsible-private-robust-ai.qmd).
+
+**EM (expectation-maximization)** — an iterative algorithm for fitting
+latent-variable models by alternating between inferring the hidden variables
+given current parameters (E-step) and updating parameters given that
+inference (M-step). See [Graphical Models and Latent
+Variables](chapters/04-graphical-latent-variable-models.qmd).
+
+**Embedding** — a learned dense vector representation of a discrete or
+high-dimensional object (a word, an item, a user, a graph node) such that
+geometric proximity in the vector space reflects some notion of semantic
+similarity.
+
+**Exchangeability** — the property that a joint distribution over a sequence
+of random variables is unchanged under any permutation of their order; weaker
+than i.i.d. but the key assumption conformal prediction relies on.
+
+**Function calling / tool use** — an LLM producing structured output (a
+function name and arguments) that a surrounding system executes, feeding the
+result back into the model's context. See [AI Agents, Tool Use, and
+Multi-Agent Systems](chapters/13-ai-agents-tool-use.qmd).
+
+**Gradient boosting** — an ensemble method that builds an additive model by
+sequentially fitting new (typically tree) models to the residual errors of
+the current ensemble. See [Trees, Ensembles, and Tabular
+ML](chapters/02-trees-ensembles-tabular.qmd).
+
+**HMM (hidden Markov model)** — a state-space model with discrete latent
+states following Markov dynamics and observed emissions that depend only on
+the current hidden state. See [Sequence, Time-Series, and State
+Models](chapters/08-sequence-state-models.qmd).
+
+**Instrumental variable** — a variable that affects the treatment but has no
+direct effect on the outcome except through the treatment, used to estimate
+causal effects under unobserved confounding.
+
+**Latent variable** — an unobserved variable in a model that helps explain
+the structure of the observed data (a cluster identity, a topic, a hidden
+state).
+
+**LLM-as-judge** — using a large language model to score or compare outputs
+of another model, as a scalable proxy for human evaluation; requires
+validating the judge's agreement with humans, since it carries its own biases
+(verbosity, position, self-preference). See [Evaluation and
+Benchmarking](chapters/14-evaluation-and-benchmarking.qmd).
+
+**Markov decision process (MDP)** — the formal model behind reinforcement
+learning: states, actions, transition probabilities, and rewards, with the
+Markov property that the next state depends only on the current state and
+action. See [RL and Bandits](chapters/10-reinforcement-learning-bandits.qmd).
+
+**MCMC (Markov chain Monte Carlo)** — a family of sampling algorithms that
+construct a Markov chain whose stationary distribution is the target
+distribution, used to approximate expectations or posteriors that have no
+closed form. See [Sampling and Approximate
+Inference](chapters/05-sampling-approximate-inference.qmd).
+
+**Message passing** — the core computation in a graph neural network: each
+node updates its representation by aggregating information from its
+neighbors, repeated over several layers/rounds. See [Graph Neural
+Networks](chapters/09-graph-neural-networks.qmd).
+
+**Nonconformity score** — a measure of how unusual a candidate label or value
+is relative to a model's prediction, the quantity conformal prediction
+calibrates against. See [Conformal Prediction](chapters/16-conformal-prediction.qmd).
+
+**Overfitting** — a model fitting the training data (including its noise) so
+closely that it generalizes poorly to new data; the high-variance end of the
+bias-variance tradeoff.
+
+**Policy** — in reinforcement learning, a (possibly stochastic) mapping from
+states to actions; the object being optimized. See [RL and
+Bandits](chapters/10-reinforcement-learning-bandits.qmd).
+
+**Posterior** — the distribution over unknown quantities after conditioning
+on observed data, combining a prior and a likelihood via Bayes' rule.
+
+**Potential outcomes** — the causal-inference framework where each unit has
+two (or more) potential outcomes, one per possible treatment assignment, only
+one of which is ever observed; the causal effect is the difference between
+outcomes that can never be jointly observed for the same unit. See [Causal
+Inference](chapters/15-causal-inference-experimentation.qmd).
+
+**Prior** — the distribution over unknown quantities before observing data,
+encoding assumptions or existing beliefs.
+
+**Propensity score** — the probability of receiving treatment given observed
+covariates; used to adjust for confounding in observational causal estimates.
+
+**RAG (retrieval-augmented generation)** — grounding a generative model's
+output by retrieving relevant documents/passages and inserting them into its
+context before generation, rather than relying solely on parametric memory.
+See [Generative AI and Foundation
+Models](chapters/12-generative-ai-foundation-models.qmd).
+
+**Regret** — in bandits and RL, the cumulative gap between the reward an
+optimal policy would have earned and the reward an actual policy earned; the
+standard way to measure exploration efficiency.
+
+**RLHF (reinforcement learning from human feedback)** — fine-tuning a
+generative model using a reward signal derived from human preference
+comparisons, typically via a learned reward model and a policy-gradient
+method. See [Generative AI and Foundation
+Models](chapters/12-generative-ai-foundation-models.qmd).
+
+**State-space model** — a model where an unobserved (or partially observed)
+state evolves over time according to transition dynamics, and observations
+depend on that state; HMMs, Kalman filters, and many time-series models are
+instances of this template.
+
+**Tokenization** — splitting text (or other data) into discrete units
+(tokens) that a model operates over; modern LLMs typically use subword
+tokenization (e.g. byte-pair encoding).
+
+**Uplift modeling** — predicting the *incremental* effect of a treatment on
+an individual (rather than their outcome under treatment alone), used to
+target interventions at the people most affected by them.
+
+**Variational inference** — approximating an intractable posterior by
+optimizing over a family of simpler distributions to minimize a divergence
+(typically KL) to the true posterior, turning inference into optimization.
+See [Sampling and Approximate
+Inference](chapters/05-sampling-approximate-inference.qmd).
+
+**VAE (variational autoencoder)** — a generative model that pairs an encoder
+(approximate posterior over a latent code) with a decoder (likelihood of data
+given the code), trained via variational inference and the reparameterization
+trick.

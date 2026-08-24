@@ -1,0 +1,73 @@
+---
+title: "Further Reading"
+---
+
+This book draws on standard references and primary literature rather than
+following any single source. These are the books, lecture series, and courses
+worth going to next for material this site only has room to summarize.
+
+## Broad machine learning
+
+- Christopher Bishop, *Pattern Recognition and Machine Learning*
+- Kevin Murphy, *Probabilistic Machine Learning: An Introduction*
+- Kevin Murphy, *Probabilistic Machine Learning: Advanced Topics*
+- Trevor Hastie, Robert Tibshirani, and Jerome Friedman, *The Elements of
+  Statistical Learning*
+- Ian Goodfellow, Yoshua Bengio, and Aaron Courville, *Deep Learning*
+
+## Probabilistic modeling, graphical models, and inference
+
+- David MacKay, *Information Theory, Inference, and Learning Algorithms*
+- Daphne Koller and Nir Friedman, *Probabilistic Graphical Models*
+- Michael Jordan, *An Introduction to Probabilistic Graphical Models*
+  (lecture notes)
+- Stanford CS228: Probabilistic Graphical Models
+- MIT 6.437 / 6.438: Inference and Information
+
+## Deep learning, sequence models, and graph neural networks
+
+- Stanford CS231n: Convolutional Neural Networks for Visual Recognition
+- Stanford CS224n: Natural Language Processing with Deep Learning
+- Stanford CS224w: Machine Learning with Graphs
+- William Hamilton, *Graph Representation Learning*
+- DeepLearning.AI's deep learning specialization
+
+## Reinforcement learning
+
+- Richard Sutton and Andrew Barto, *Reinforcement Learning: An Introduction*
+- David Silver's Reinforcement Learning course (UCL / DeepMind)
+- UC Berkeley CS285: Deep Reinforcement Learning
+- Stanford CS234: Reinforcement Learning
+
+## Generative AI, agents, and evaluation
+
+- Andrej Karpathy's "Neural Networks: Zero to Hero" series, for building
+  language models and transformers from scratch
+- The Hugging Face NLP course, for tokenization, pretraining, and fine-tuning
+  in practice
+- ReAct: Synergizing Reasoning and Acting in Language Models (Yao et al.) for
+  the agent-loop pattern most modern agent frameworks build on
+- Chatbot Arena / LMSYS papers, for a working example of large-scale human
+  preference evaluation and its pitfalls
+
+## Causal inference and experimentation
+
+- Judea Pearl, *Causality*
+- Miguel Hernán and James Robins, *Causal Inference: What If*
+- Scott Cunningham, *Causal Inference: The Mixtape*
+- Brady Neal, *Introduction to Causal Inference* (course and free book)
+
+## Conformal prediction
+
+- Anastasios Angelopoulos and Stephen Bates, *A Gentle Introduction to
+  Conformal Prediction and Distribution-Free Uncertainty Quantification*
+
+## ML systems, MLOps, and responsible AI
+
+- Chip Huyen, *Designing Machine Learning Systems*
+- Emmanuel Ameisen, *Building Machine Learning Powered Applications*
+- Andriy Burkov, *Machine Learning Engineering*
+- Stanford CS329S: Machine Learning Systems Design
+- Full Stack Deep Learning
+- Cynthia Dwork and Aaron Roth, *The Algorithmic Foundations of Differential
+  Privacy*

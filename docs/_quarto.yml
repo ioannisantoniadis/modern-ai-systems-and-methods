@@ -1,0 +1,78 @@
+project:
+  type: book
+  output-dir: _site
+
+book:
+  title: "Modern AI Systems and Methods"
+  subtitle: "A field guide to how modern AI actually fits together"
+  description: >-
+    Nineteen chapters mapping supervised learning through agents, evaluation,
+    and responsible AI — real computed visualizations, not diagrams, and every
+    chapter linked to the ones around it.
+  site-url: "https://ioannisantoniadis.github.io/modern-ai-systems-and-methods/"
+  repo-url: "https://github.com/ioannisantoniadis/modern-ai-systems-and-methods"
+  repo-actions: [edit, issue]
+  page-footer:
+    left: >-
+      Source on [GitHub](https://github.com/ioannisantoniadis/modern-ai-systems-and-methods).
+    right: "Rendered with [Quarto](https://quarto.org)."
+  chapters:
+    - index.qmd
+    - part: "The map"
+      chapters:
+        - chapters/00-landscape-and-map.qmd
+    - part: "Prediction from labeled data"
+      chapters:
+        - chapters/01-supervised-learning.qmd
+        - chapters/02-trees-ensembles-tabular.qmd
+    - part: "Uncertainty and hidden structure"
+      chapters:
+        - chapters/03-probabilistic-modeling.qmd
+        - chapters/04-graphical-latent-variable-models.qmd
+        - chapters/05-sampling-approximate-inference.qmd
+    - part: "Representations and neural function approximation"
+      chapters:
+        - chapters/06-representation-learning.qmd
+        - chapters/07-deep-learning-foundations.qmd
+        - chapters/08-sequence-state-models.qmd
+        - chapters/09-graph-neural-networks.qmd
+    - part: "Decisions, selection, and generation"
+      chapters:
+        - chapters/10-reinforcement-learning-bandits.qmd
+        - chapters/11-ir-ranking-recommenders.qmd
+        - chapters/12-generative-ai-foundation-models.qmd
+        - chapters/13-ai-agents-tool-use.qmd
+    - part: "Knowing whether it works"
+      chapters:
+        - chapters/14-evaluation-and-benchmarking.qmd
+        - chapters/15-causal-inference-experimentation.qmd
+        - chapters/16-conformal-prediction.qmd
+    - part: "Operating it in the world"
+      chapters:
+        - chapters/17-ml-systems-mlops.qmd
+        - chapters/18-responsible-private-robust-ai.qmd
+    - part: "Appendices"
+      chapters:
+        - appendix-glossary.qmd
+        - appendix-references.qmd
+  navbar:
+    background: light
+  page-navigation: true
+
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    toc: true
+    number-sections: true
+    number-depth: 2
+    fig-align: center
+    smooth-scroll: true
+    grid:
+      sidebar-width: 260px
+      body-width: 850px
+      margin-width: 250px
+    link-external-newwindow: true
+
+bibliography: references.bib

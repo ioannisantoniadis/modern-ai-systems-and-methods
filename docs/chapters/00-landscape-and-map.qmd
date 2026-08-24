@@ -1,0 +1,158 @@
+---
+title: "The Map"
+---
+
+Modern AI is easiest to misread as a single ladder: classical ML at the
+bottom, deep learning in the middle, LLMs at the top, everything else a
+footnote. That framing collapses the moment you look at an actual system. A
+production recommender combines supervised ranking, matrix factorization,
+sequence models, bandit exploration, and causal evaluation of logged data. A
+retrieval-augmented LLM product combines dense embeddings, approximate
+nearest-neighbor search, a generative model, an evaluation pipeline, and a
+safety layer. None of these are one technique wearing different hats — they
+are distinct problem framings that happen to compose.
+
+This chapter is the whole landscape in one page: eighteen framings, grouped
+into six questions a system's design answers, with the concrete concepts that
+let one chapter's ideas solve another chapter's problem. Read it first, then
+use it as the index whenever a later chapter references a neighbor — it's the
+map key, not just an introduction.
+
+## Five questions that locate almost any method
+
+Before naming the framings, it helps to have the axes they vary along. Most
+of what you'll meet in this book can be placed by asking:
+
+- **What is observed, and what is hidden?** Supervised learning observes
+  everything relevant (inputs and labels); latent-variable models assume
+  something important — a cluster identity, a topic, a user's true
+  preference — is never directly seen.
+- **Is the goal prediction, generation, decision-making, or causal
+  estimation?** Predicting tomorrow's demand, generating a plausible product
+  description, deciding which ad to show, and estimating whether a discount
+  *caused* a purchase are four different mathematical problems that happen to
+  use overlapping machinery.
+- **Are labels available, weak, delayed, biased, or missing entirely?** This
+  single question is why supervised learning, self-supervised representation
+  learning, weak supervision, and reinforcement learning all exist as
+  separate fields rather than one.
+- **Is uncertainty central or incidental?** A spam filter can be usefully
+  wrong sometimes. A model deciding whether to page an on-call engineer, or a
+  self-driving system deciding whether to brake, cannot treat its confidence
+  as an afterthought.
+- **Does the method need to survive contact with a running system?** Latency
+  budgets, feedback loops, privacy constraints, and monitoring are not
+  add-ons bolted onto a model after the fact — they shape which method is
+  usable at all.
+
+## The eighteen framings, in six groups
+
+![How the chapters connect — edges follow shared concepts and data flow, node position from a force-directed layout on that structure. The graph itself is real output from `scripts/figures/fig_landscape_network.py`: it builds a graph from the edge list below and lets a spring layout (Fruchterman-Reingold) find node positions, rather than hand-placing boxes.](../images/landscape-network.png){#fig-landscape-network}
+
+### 1. Prediction from labeled data
+
+**[Supervised Learning](01-supervised-learning.qmd)** answers the oldest
+question in the field: given labeled examples, how do we predict the right
+output for a new input? **[Trees, Ensembles, and Tabular
+ML](02-trees-ensembles-tabular.qmd)** is supervised learning specialized for
+structured, tabular data — still the default choice for a large share of
+real production systems, deep learning's dominance in research notwithstanding.
+
+### 2. Uncertainty and hidden structure
+
+**[Probabilistic Modeling](03-probabilistic-modeling.qmd)** stops treating a
+prediction as a single number and starts treating it as a distribution: what
+uncertain process could have generated this data, and what can we infer about
+it? **[Graphical Models and Latent
+Variables](04-graphical-latent-variable-models.qmd)** adds structure to that
+uncertainty — dependencies between variables, hidden factors that explain
+what's observed. **[Sampling and Approximate
+Inference](05-sampling-approximate-inference.qmd)** is the machinery that
+makes the first two usable in practice, since most interesting posteriors
+have no closed form.
+
+### 3. Representations and function approximation
+
+**[Representation Learning](06-representation-learning.qmd)** asks what
+compressed or transformed view of raw data makes everything downstream
+easier. **[Deep Learning Foundations](07-deep-learning-foundations.qmd)**
+scales that idea with layered, differentiable models trained by gradient
+descent — less a single application and more a modeling toolkit reused across
+almost every other chapter. **[Sequence, Time-Series, and State
+Models](08-sequence-state-models.qmd)** adds order and memory: how the past
+constrains the present. **[Graph Neural
+Networks](09-graph-neural-networks.qmd)** adds relational structure: how a
+node's neighbors constrain what it means.
+
+### 4. Decisions, selection, and generation
+
+**[Reinforcement Learning and Bandits](10-reinforcement-learning-bandits.qmd)**
+turns prediction into action under feedback: what should an agent do to
+maximize reward over time, when its own choices change what it observes next?
+**[Information Retrieval, Ranking, and
+Recommenders](11-ir-ranking-recommenders.qmd)** selects and orders candidates
+from a large space. **[Generative AI and Foundation
+Models](12-generative-ai-foundation-models.qmd)** produces new content
+directly — text, images, code — by sampling from a learned distribution over
+what plausible data looks like. **[AI Agents, Tool Use, and Multi-Agent
+Systems](13-ai-agents-tool-use.qmd)** wraps a generative model in a loop that
+plans, calls tools, and revises — the newest and least settled framing here.
+
+### 5. Knowing whether it works
+
+**[Evaluation and Benchmarking](14-evaluation-and-benchmarking.qmd)** is the
+methodology that every other chapter depends on and few of them state
+explicitly: what makes a metric trustworthy, and when does it stop matching
+the thing you actually care about? **[Causal Inference and
+Experimentation](15-causal-inference-experimentation.qmd)** asks a sharper
+version of the same question — not just "does the model look good?" but "did
+our *intervention* cause the outcome we wanted?" **[Conformal
+Prediction](16-conformal-prediction.qmd)** gives a model-agnostic way to know
+how much to trust any single prediction, with a guarantee that holds even
+when the underlying model doesn't.
+
+### 6. Operating it in the world
+
+**[ML Systems and MLOps](17-ml-systems-mlops.qmd)** is what turns a notebook
+result into something reliable, observable, and cheap enough to run in
+production. **[Responsible, Private, and Robust
+AI](18-responsible-private-robust-ai.qmd)** is the set of constraints —
+fairness, privacy, robustness, safety — that decide whether a system *should*
+run the way it technically *could*.
+
+## Why the boundaries are porous
+
+A handful of ideas keep reappearing under different names because they are
+genuinely the same idea:
+
+- **Regularization is a prior.** Ridge and lasso penalties are the MAP
+  estimate under a Gaussian or Laplace prior — [supervised
+  learning](01-supervised-learning.qmd) and [probabilistic
+  modeling](03-probabilistic-modeling.qmd) doing the same optimization from
+  two vocabularies.
+- **A recommender's embeddings are latent variables.** Matrix factorization
+  in [retrieval and ranking](11-ir-ranking-recommenders.qmd) is structurally
+  identical to the latent factors in [graphical
+  models](04-graphical-latent-variable-models.qmd).
+- **Generation is sampling.** A diffusion model, a VAE decoder, and an
+  autoregressive LLM are all, mechanically, ways to sample from a learned
+  distribution — which is why [generative
+  AI](12-generative-ai-foundation-models.qmd) leans so heavily on ideas from
+  [sampling](05-sampling-approximate-inference.qmd) and [representation
+  learning](06-representation-learning.qmd).
+- **An agent's tool call is a decision.** The control loop in [AI
+  agents](13-ai-agents-tool-use.qmd) — observe, decide, act, observe the
+  result — is the same loop [reinforcement
+  learning](10-reinforcement-learning-bandits.qmd) has formalized for
+  decades, now with a language model as the policy.
+- **Prediction is not intervention.** The single most common production
+  mistake this book returns to: a model that predicts well is not the same
+  as an action that causes the outcome you want. That gap is the entire
+  subject of [causal inference](15-causal-inference-experimentation.qmd), and
+  it quietly undermines naive uses of [supervised
+  learning](01-supervised-learning.qmd), [RL](10-reinforcement-learning-bandits.qmd),
+  and [ranking](11-ir-ranking-recommenders.qmd) alike.
+
+Read the rest of this book with those five patterns in mind, and the map
+above stops being eighteen separate subjects and starts being one subject
+looked at from eighteen angles.

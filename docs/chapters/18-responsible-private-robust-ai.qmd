@@ -1,0 +1,322 @@
+---
+title: "Responsible, Private, and Robust AI"
+---
+
+Every other chapter in this book asks whether a model works. This one asks
+what happens when it does — because a model that is accurate on average can
+still be unfair to a subgroup, leak information about the people in its
+training data, be trivially fooled by an adversary, or confidently produce
+harmful output at scale. Responsible AI is not one property a model either
+has or lacks. It's a family of distinct concerns — fairness, privacy,
+interpretability, robustness, security, and alignment — each with its own
+failure modes, its own metrics, and often its own tradeoffs against the
+others and against raw accuracy. The unifying discipline across all of them
+is the same: name the people the system affects, name the specific way it
+could harm them, decide how you'd measure that, and decide what you'd do
+about it. Treating "is this AI responsible" as a single yes/no question, or
+a single metric to hit, is itself usually the first mistake — a system can
+score well on demographic parity and still discriminate through a
+correlated proxy; a system can satisfy differential privacy and still leak
+information in effect through model behavior; a system can pass a static
+robustness test and still be defeated by an adversary who's read the paper.
+
+## Fairness
+
+Bias enters a machine learning system in several distinct ways, and telling
+them apart matters because they call for different fixes. **Historical
+bias** exists in the world before any data is collected — if a hiring
+process has historically favored one group, training data drawn from past
+hiring decisions encodes that pattern regardless of how carefully the data
+is collected. **Representation bias** comes from who is included in the
+data at all — a dataset with too few examples of a subgroup will produce a
+model that's simply less accurate for that subgroup, not necessarily
+biased in a discriminatory direction, just under-trained on it.
+**Measurement bias** comes from proxies that don't mean the same thing
+across groups — using arrest records as a proxy for criminal behavior, when
+policing intensity itself varies by neighborhood and demographic, bakes in
+a systematic distortion that has nothing to do with the underlying
+behavior being measured. These compound into **allocation harms** (who gets
+a loan, a job interview, a diagnosis) and **quality-of-service gaps** (a
+speech recognizer that works worse for one accent, a face detector that
+works worse for one skin tone) — the first is about who receives a
+resource, the second is about whether the system works equally well for
+everyone who uses it, and a system can be guilty of either without the
+other.
+
+Fairness *metrics* formalize different, and importantly, mutually
+incompatible notions of what "fair" means:
+
+- **Demographic parity**: $P(\hat Y = 1 \mid A = 0) = P(\hat Y = 1 \mid A =
+  1)$ — the positive prediction rate is equal across groups, regardless of
+  the true outcome. This is the right target when the base rates
+  themselves are considered unjust or a downstream effect of the bias
+  you're trying to correct for.
+- **Equalized odds**: true positive rate and false positive rate are both
+  equal across groups, conditional on the true label. This is the right
+  target when you want the model's *errors*, not just its output rate, to
+  be distributed equally.
+- **Equal opportunity**: a relaxation of equalized odds that only requires
+  equal true positive rates — useful when false positives matter less than
+  making sure qualified members of every group are found at equal rates.
+- **Calibration by group**: within each group, a predicted probability of
+  $p$ should correspond to an actual positive rate of $p$ — the model's
+  confidence should mean the same thing regardless of group membership.
+
+A foundational and often underappreciated result is that, except in
+degenerate cases, **demographic parity, equalized odds, and calibration by
+group cannot all be satisfied simultaneously** when the base rate of the
+outcome differs across groups — which is common, since base rates differing
+across groups is frequently the very thing that motivated looking at
+fairness in the first place. Choosing a fairness metric is therefore not a
+technical detail to defer to an engineer; it's a value judgment about what
+kind of equality matters for the specific decision being made, and it needs
+to be made explicitly, with the people affected and the nature of the harm
+in mind, not defaulted to whichever metric a fairness toolkit happens to
+report first.
+
+@fig-fairness-privacy (left panel) makes the fairness/accuracy tradeoff
+concrete on a synthetic biased dataset, where a sensitive attribute
+correlates both with a predictive feature and with the label directly (a
+stand-in for historical bias). Starting from a group-blind decision
+threshold, adjusting the classification threshold per group traces out a
+frontier: closing the demographic parity gap costs overall accuracy, and
+the curve shows how much — this is not a hypothetical tension, it's a
+direct, measurable one for any dataset where the sensitive attribute
+carries real predictive signal correlated with historical outcomes.
+
+![Left: sweeping a per-group decision threshold on a synthetic biased
+classifier traces out the tradeoff between overall accuracy and the
+demographic parity gap between groups — closing the gap costs measurable
+accuracy on this dataset, starting from the group-blind threshold marked
+with a diamond. Right: adding calibrated Laplace noise to a simple aggregate
+statistic under differential privacy — mean absolute error against the true
+value rises sharply as the privacy budget epsilon shrinks (more
+noise, more privacy), and flattens out once epsilon is large enough that
+privacy is
+essentially not being enforced.](../images/responsible_fairness_and_privacy.png){#fig-fairness-privacy}
+
+## Privacy
+
+Privacy techniques form a rough hierarchy from weakest to strongest
+guarantee. **Data minimization** — collecting and retaining only what's
+needed — and **anonymization or aggregation** — stripping direct
+identifiers, reporting only group statistics — are the cheapest and most
+common defenses, but both are famously breakable: removing a name and an
+address doesn't prevent re-identification when enough auxiliary
+quasi-identifiers (zip code, birth date, gender) remain, a fact demonstrated
+repeatedly on supposedly anonymized datasets by cross-referencing them
+against other public records.
+
+**Differential privacy (DP)** is the formal answer to that weakness. A
+randomized mechanism $M$ is $\varepsilon$-differentially private if for any
+two datasets $D, D'$ differing in a single record, and any output set $S$,
+
+$$
+P(M(D) \in S) \leq e^{\varepsilon} \, P(M(D') \in S).
+$$
+
+In words: whether or not any single individual's data is in the dataset
+changes the probability of any observable output by at most a factor of
+$e^\varepsilon$. This gives a precise, worst-case guarantee that holds
+regardless of what the adversary already knows or does with the output —
+unlike anonymization, whose protection depends entirely on what auxiliary
+information happens to be available to an attacker. Small $\varepsilon$
+means strong privacy (the mechanism's output is nearly indistinguishable
+whether or not you're in the data) and larger $\varepsilon$ means weaker
+privacy (closer to releasing the true, un-noised statistic). The standard
+way to achieve this for a numeric query is to add noise calibrated to the
+query's *sensitivity* — how much the query's output can change from adding
+or removing one record — for example the Laplace mechanism adds noise drawn
+from $\text{Laplace}(0, \Delta / \varepsilon)$, where $\Delta$ is the
+query's sensitivity, directly to the true answer.
+
+@fig-fairness-privacy (right panel) runs exactly this on a simple bounded
+mean query: as $\varepsilon$ shrinks (stronger privacy, less signal
+allowed to leak), the noise needed to satisfy the definition grows, and the
+mean absolute error against the true statistic rises sharply — this is the
+privacy/utility tradeoff made concrete and quantitative rather than
+asserted. The curve also shows the shape of the tradeoff clearly:
+well-chosen small $\varepsilon$ costs real accuracy, but the marginal cost
+of tightening privacy further keeps growing, while a large $\varepsilon$
+quickly stops buying any meaningful privacy at all — there's a real
+inflection point, not a smooth linear tradeoff, and choosing $\varepsilon$
+in practice means picking a point deliberately rather than defaulting to a
+library's example value.
+
+A crucial property that makes DP practical for real systems is
+**composition**: the privacy loss of releasing multiple DP-protected
+statistics from overlapping or the same data accumulates (roughly, the
+$\varepsilon$'s add, with tighter accounting available for more careful
+analyses), which is exactly the mathematical structure needed to reason
+about a privacy *budget* across an entire system rather than only a single
+query. A system making thousands of DP queries against the same underlying
+dataset needs to track cumulative privacy loss deliberately, or the
+aggregate guarantee silently degrades to nothing even if each individual
+query looked private in isolation.
+
+Beyond central DP applied to a single trusted data holder, **federated
+learning** trains a shared model across decentralized data without
+centralizing the raw data itself — only model updates (gradients or weight
+deltas) leave each device — which reduces but does not eliminate leakage
+risk, since gradients themselves can sometimes be inverted to recover
+information about the underlying data; it's often combined with DP or
+**secure aggregation** (a cryptographic protocol ensuring the server only
+ever sees the *sum* of client updates, never any individual one) to close
+that gap. **On-device inference** avoids the privacy question for inference
+entirely by never sending user data off the device in the first place,
+though this doesn't protect data used to train the shared model.
+
+## Interpretability
+
+Interpretability methods trade off scope, faithfulness, and cost.
+**Coefficients and feature importance** from an inherently interpretable
+model (linear/logistic regression, a shallow tree) are the cheapest and most
+faithful explanation available, precisely because the explanation *is* the
+model, but they only exist for models simple enough to be interpretable by
+construction. **SHAP** (Shapley additive explanations) and **LIME** (local
+interpretable model-agnostic explanations) both work post-hoc on any black
+box: SHAP attributes a prediction's deviation from a baseline to each
+feature using Shapley values from cooperative game theory — the unique
+attribution satisfying a specific, principled set of fairness axioms about
+how credit should be split among features — while LIME fits a simple local
+surrogate model around one prediction to approximate the black box's
+behavior *near that point*. Both are approximations to the true, usually
+intractable decision function, and both can be fooled or made unstable by
+an adversarially constructed model, which matters if the explanation is
+being used for anything with real stakes rather than just intuition
+building.
+
+**Counterfactual explanations** answer a different, often more directly
+actionable question: not "why did the model decide this," but "what's the
+smallest change to my input that would flip the decision" — directly useful
+for a rejected loan applicant, less useful for auditing the model's overall
+behavior. **Saliency maps** highlight which input regions (pixels, tokens)
+most influenced a prediction, standard for vision and increasingly for
+language models, though naive gradient-based saliency is known to be
+fragile and sometimes highlights regions with no real causal bearing on the
+output. **Probing and mechanistic interpretability** go a level deeper for
+neural networks specifically: probing trains a small auxiliary classifier
+on a model's internal representations to test whether a specific concept is
+linearly recoverable there, while mechanistic interpretability tries to
+reverse-engineer the actual computational circuit a network has learned —
+the most ambitious and currently the most labor-intensive approach, but the
+only one aiming at genuinely explaining *how* the model computes its
+output rather than merely correlating inputs with outputs.
+
+## Robustness and security
+
+A model's accuracy on its test set says nothing about how it behaves under
+**distribution shift** — a systematic change between training and
+deployment conditions that isn't adversarial, just different, and the same
+phenomenon covered as data drift in
+[ML Systems and MLOps](17-ml-systems-mlops.qmd). **Adversarial examples**
+are the deliberately engineered version: small, often imperceptible
+perturbations to an input, specifically constructed (usually via gradients
+of the model's own loss function) to flip its prediction, which demonstrate
+that high test accuracy and genuine robustness are not the same property at
+all. For language models specifically, **prompt injection** is the
+analogous attack: input (often from an untrusted source the model is asked
+to process, like a webpage or document) crafted to override the model's
+intended instructions, a first-class security concern for any system
+covered in [AI Agents, Tool Use, and Multi-Agent Systems](13-ai-agents-tool-use.qmd)
+where a model acts autonomously on retrieved or user-supplied content.
+**Data poisoning** attacks the training pipeline itself rather than a
+deployed model, injecting corrupted examples so the model that gets trained
+already has an exploitable weakness baked in. **Model extraction** attacks
+try to reconstruct a proprietary model's behavior (or the model itself)
+purely by querying it as a black box, a risk for any model exposed through
+a public API. **Jailbreaks** are prompt-level attacks specifically aimed at
+bypassing a language model's safety training rather than its factual
+correctness. **Abuse monitoring** is the operational, ongoing counterpart to
+all of the above — detecting misuse patterns in production traffic in real
+time, since no set of defenses designed before launch anticipates every
+attack that will actually be tried against a live system.
+
+## Safety and alignment for generative AI
+
+Generative models introduce failure modes that don't have a clean analogue
+in classical supervised learning, because the output space is open-ended
+rather than a fixed label set. **Refusal behavior** — a model declining to
+answer a harmful or disallowed request — has to be tuned carefully, because
+both directions of miscalibration are real failures: over-refusal makes a
+model useless for legitimate requests that merely resemble harmful ones,
+under-refusal defeats the point of having a safety boundary at all.
+**Factuality** (a model asserting false information confidently, commonly
+called hallucination) is a distinct problem from safety in the harmful-
+content sense, but shares the same root cause: generative models are
+trained to produce plausible continuations, not verified ones, and nothing
+in that training objective directly rewards truthfulness over fluency.
+**Toxicity and policy compliance** cover the more classical content-
+moderation surface — output that's harmful, offensive, or against a
+platform's stated policy, whether or not it was solicited. **Reward
+hacking** is what happens when a model optimized against a proxy reward
+(often a learned reward model standing in for human preference, as in RLHF)
+finds a way to score well on the proxy without actually satisfying the
+underlying intent — verbose answers that "seem" thorough to a reward model
+without being more correct, for instance. **Human preference validation**
+is the ongoing check that a model's learned notion of "good" (from RLHF,
+DPO, or similar) actually still tracks what humans want, rather than
+drifting toward whatever the training process happened to make easy to
+optimize. **Red teaming** — deliberately, adversarially trying to break a
+model's safety properties before and after deployment — is the operational
+practice that catches gaps left by all of the above, precisely because none
+of these properties can be fully verified by a fixed test set; a
+sufficiently motivated adversary explores parts of the input space that
+a static benchmark never will.
+
+## When to use it / what can go wrong
+
+The single most important habit across all of these areas is refusing to
+treat "responsible AI" as a checkbox metric computed once before launch.
+Fairness metrics need to be recomputed as a model's population and behavior
+drift in production, exactly like any other metric in
+[ML Systems and MLOps](17-ml-systems-mlops.qmd). A DP guarantee only holds
+if the privacy budget is tracked cumulatively across every query the system
+ever makes against the protected data, not just the one query that was
+audited. A robustness evaluation against last year's known attacks says
+nothing about next year's, especially for systems (like language models
+behind a public API) that adversaries can iterate against directly. And an
+interpretability method that looks reasonable on a hand-picked example
+needs to be checked for faithfulness more broadly — SHAP and LIME
+approximations can both be systematically misleading for particular model
+classes and particular kinds of feature correlation.
+
+The second habit is being explicit about which specific harm and which
+specific affected group a given mitigation targets, because the concerns in
+this chapter frequently trade off against *each other*, not just against
+accuracy: a differential privacy mechanism can *worsen* fairness, since
+adding noise disproportionately hurts accuracy for underrepresented
+subgroups where there was already less signal to begin with; an
+interpretability method that surfaces a sensitive attribute's influence on
+a decision can itself become a privacy leak; and a robustness intervention
+hardened against one attack class can degrade accuracy or fairness for
+ordinary, non-adversarial inputs. There is no single scalar that captures
+"is this system responsible," and any team that reduces the question to one
+should treat that as a sign the actual analysis — who is affected, how, and
+what tradeoff was chosen and why — hasn't been done yet.
+
+## How this connects
+
+- [Evaluation and Benchmarking](14-evaluation-and-benchmarking.qmd) —
+  fairness metrics, robustness evaluations, and safety red-teaming are all
+  specialized evaluation methodology, subject to the same slicing,
+  statistical power, and benchmark-validity concerns as any other model
+  evaluation.
+- [Causal Inference and Experimentation](15-causal-inference-experimentation.qmd)
+  — a claim that a model "causes" disparate outcomes across groups is a
+  causal claim, and rigorous fairness audits need the same confounding-aware
+  reasoning as any other causal question, not just an observational metric
+  gap.
+- [Conformal Prediction](16-conformal-prediction.qmd) — class-conditional
+  (Mondrian) conformal prediction is a direct fairness tool, guaranteeing
+  coverage per subgroup rather than letting a marginal guarantee mask worse
+  reliability for one group.
+- [ML Systems and MLOps](17-ml-systems-mlops.qmd) — fairness, privacy
+  budgets, and robustness all need continuous production monitoring, using
+  the same drift-detection and guardrail infrastructure built for ordinary
+  model quality metrics.
+- [AI Agents, Tool Use, and Multi-Agent Systems](13-ai-agents-tool-use.qmd)
+  — prompt injection, jailbreaks, and abuse monitoring are sharpest exactly
+  where an agent acts autonomously on untrusted content or has access to
+  real-world tools, making robustness a safety-critical property rather
+  than a nice-to-have.

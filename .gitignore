@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 private-notes.md
 roadmap.md
+docs/_site/
+docs/.quarto/

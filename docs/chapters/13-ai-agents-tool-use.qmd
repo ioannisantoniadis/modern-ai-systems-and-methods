@@ -1,0 +1,280 @@
+---
+title: "AI Agents, Tool Use, and Multi-Agent Systems"
+---
+
+A language model on its own is a function from text to text: it reads a
+prompt and writes a continuation. An *agent* is what you get when you put
+that function in a loop with the outside world — letting it take actions
+(search the web, run code, call an API, write a file), observe the results,
+and decide what to do next, repeatedly, until it judges the task done. The
+question an agent architecture answers is not "how do I get a better single
+response" but "how do I get a system that can pursue a multi-step goal it
+wasn't explicitly walked through," using tools it wasn't hard-coded to call
+in a fixed order. This is one of the most consequential shifts in applied
+generative AI between 2023 and 2026: the same underlying foundation models
+from the previous chapter, wrapped in an orchestration loop that turns
+"generate the next token" into "decide the next action."
+
+It's worth being precise about why this is hard, because the difficulty is
+not "the model doesn't know things" — it's that acting in a loop compounds
+whatever imperfection exists in a single generation. A model that's right
+95% of the time per step is only right $0.95^{10} \approx 60\%$ of the time
+across ten dependent steps if errors aren't caught and corrected along the
+way. Everything interesting about agent design — planning, memory, tool-call
+formatting, multi-agent decomposition — is in some sense an attempt to fight
+that compounding, either by keeping the loop short, by giving the model ways
+to notice and recover from its own mistakes, or by checking work with
+something other than the same fallible process that produced it.
+
+## How it works
+
+### The agent loop and ReAct
+
+The canonical agent loop is *perceive → plan → act*, repeated: observe the
+current state (the user's request, tool results so far), decide what to do
+next, take an action, observe its result, and repeat until done. The
+influential formalization of this for LLMs is ReAct (Reason + Act), which
+interleaves free-text reasoning steps with action steps in the same
+generation stream, rather than asking the model to silently plan internally
+and only emit actions. Concretely, a ReAct-style trace looks like a
+repeating pattern of:
+
+```
+Thought: <free-text reasoning about what to do next and why>
+Action: <a tool call, e.g. search("...") or run_code("...")>
+Observation: <the tool's actual output, inserted into context>
+```
+
+repeated until the model emits a final answer instead of another action.
+@fig-agents-trace-timeline shows a real (hand-authored, but representative)
+trace of exactly this pattern for a small research task, including a branch
+where a tool call fails and the agent has to notice the failure and retry
+with a different query rather than treating it as a dead end.
+
+The reason interleaving thought and action beats "plan silently, then act"
+is that it makes the model's reasoning *visible and revisable at every step*
+rather than committed upfront. If a plan is generated once, at the start,
+and then executed blindly, an early wrong assumption propagates through the
+whole trajectory unchecked. If reasoning happens fresh at each step,
+conditioned on the actual observation just received, the model gets a chance
+to notice "that tool result wasn't what I expected" and adapt — which is
+exactly what happens at step 4 in @fig-agents-trace-timeline, where the
+model reasons explicitly about the timeout before deciding to retry rather
+than give up.
+
+![A ReAct-style agent trace for the task "find and summarize a fact using a search tool," rendered as a vertical timeline of eight steps color-coded by type (thought, tool call, tool result, tool error, final answer). Step 3 is a tool failure (search timeout); step 4 is the agent explicitly reasoning about the failure before retrying with a narrower query at step 5, which succeeds. This is the recovery pattern that separates a robust agent loop from one that treats any tool error as a dead end.](../images/agents_trace_timeline.png){#fig-agents-trace-timeline}
+
+### Tool calling as constrained generation
+
+The mechanism underneath "the model calls a tool" is worth being concrete
+about, because it demystifies a lot of what looks like separate magic.
+A tool (or "function") is registered with a name, a natural-language
+description, and a schema for its arguments (typically JSON Schema). The
+model is shown these schemas in its context (or via a dedicated
+tool-definition channel in the API) and, instead of being asked to produce
+free-form text, is asked to either respond normally or produce output that
+validates against one of the registered schemas — typically a JSON object
+naming the tool and its arguments. This is fundamentally **structured-output-
+constrained generation**: the same next-token-prediction machinery from
+[Generative AI and Foundation Models](12-generative-ai-foundation-models.qmd),
+just with the model either trained (via SFT/preference data containing tool
+calls) to reliably emit well-formed structured calls, or additionally
+constrained at decode time — e.g. grammar-constrained decoding that masks
+out any next token that would make the output fail to parse as valid JSON
+matching the schema, guaranteeing syntactic validity even if the model's
+choice of *which* tool and *which arguments* can still be wrong. Once the
+model emits a call, the orchestration code outside the model — not the model
+itself — actually executes it (hits the API, runs the code, queries the
+database) and inserts the result back into the context as an observation for
+the next generation step. The model never directly touches the world; it
+only ever proposes actions that a harness carries out.
+
+### Planning and task decomposition
+
+For anything beyond a couple of steps, letting the model improvise one
+action at a time from the raw goal tends to wander. Planning approaches sit
+on a spectrum:
+
+- **Reactive / no explicit plan**: ReAct as described above, deciding the
+  next single action from current state each time. Simple, adapts well to
+  surprises, but can lose the thread on long tasks since there's no explicit
+  representation of "what's left to do."
+- **Upfront decomposition**: ask the model to first produce a plan — an
+  ordered (or partially ordered) list of subtasks — before executing any of
+  them, then execute the plan, replanning only if something breaks it. This
+  gives better global coherence on tasks with clear structure, at the cost of
+  being brittle to the plan being wrong from the start.
+- **Interleaved plan-and-execute**: maintain an explicit, editable plan
+  *and* revisit it after each action's observation, so the plan itself is a
+  first-class piece of state the model can rewrite mid-task rather than a
+  one-shot artifact. This is closer to what production coding and research
+  agents do in 2026 — plans are working documents, not fixed scripts.
+
+Decomposition matters because a single LLM call has a bounded, per-call
+reliability; breaking "write a data pipeline" into "write the schema," "write
+the extraction step," "write the transform step," "write tests" gives each
+sub-call a narrower, more checkable target, and lets the harness verify
+intermediate results (does the schema parse? do the tests pass?) instead of
+only being able to judge one giant, unverifiable final output.
+
+### Memory
+
+An LLM's context window is its only working memory by default, and it is
+both finite and, for very long contexts, subject to degrading attention to
+content in the middle of a long prompt. Two different memory problems show
+up in agent design and need different solutions:
+
+- **Short-context / working memory**: what's needed for the current step —
+  the last several turns, the most recent tool results, the current plan.
+  This lives directly in the prompt and is managed by summarizing or
+  truncating older content as the context fills up, trading fidelity (losing
+  detail from earlier in the trajectory) for staying within the context
+  budget.
+- **Long-term / retrieval-augmented memory**: facts, past interactions, or
+  documents that need to persist and be recalled *across* sessions or far
+  beyond what fits in one context window. Rather than keeping everything in
+  the prompt, this is stored externally (often as embeddings in a vector
+  index) and pulled in on demand via retrieval — the same architecture as
+  RAG in the previous chapter, just retrieving from a memory store the agent
+  itself wrote to, instead of a fixed corpus. This connects directly to
+  [Information Retrieval, Ranking, and Recommenders](11-ir-ranking-recommenders.qmd):
+  a good agent memory system is a search and ranking problem (what's
+  relevant to retrieve right now) wearing an agent's clothes.
+
+The trade-off is the familiar one from any caching or summarization system:
+keeping more in active context improves the odds of using it correctly (since
+the model doesn't have to correctly decide *to* retrieve it, and doesn't
+suffer retrieval error), but costs more tokens, more latency, and more
+opportunity for irrelevant content to distract the model; retrieval scales to
+unbounded history but adds a dependency on the retriever actually finding the
+right thing.
+
+### Multi-agent orchestration
+
+Rather than one model doing everything, a task can be split across multiple
+agent instances (often the same underlying model, invoked with different
+system prompts, tools, or context) that specialize and interact:
+
+- **Supervisor / worker (orchestrator-subagent)**: one agent decomposes the
+  task and dispatches subtasks to specialized worker agents (a "coding
+  agent," a "search agent," a "review agent"), then integrates their
+  outputs. This mirrors a management hierarchy: it isolates each worker's
+  context to just what its subtask needs (helping the compounding-error
+  problem by keeping each sub-loop short), but adds coordination overhead and
+  makes the supervisor's decomposition and integration steps into new
+  potential points of failure.
+- **Debate**: two or more agents argue different positions or independently
+  attempt the same task, and either a judge (another model call, or a human)
+  picks the better output, or the agents iteratively critique each other's
+  reasoning before converging. The idea is that errors an agent wouldn't
+  catch in its own output are sometimes visible to a second agent evaluating
+  it from outside — a weak form of adversarial checking, borrowing the same
+  intuition as ensemble methods in [Trees, Ensembles, and Tabular
+  ML](02-trees-ensembles-tabular.qmd): independent errors are more likely to
+  disagree than to correlate.
+- **Parallel fan-out / fan-in**: dispatch the same or related subtasks to
+  many agents concurrently (e.g. "search N different sources
+  simultaneously," or "generate K candidate solutions in parallel") and then
+  aggregate — by voting, by a scoring/ranking step, or by feeding all
+  candidates to a further synthesis call. This trades compute (running many
+  agents) for either latency (parallel is faster than serial) or quality
+  (more candidates raise the odds one is good, provided the aggregation step
+  can actually tell which one).
+
+Multi-agent systems don't eliminate the compounding-error problem described
+in the opening — they change its shape. A supervisor that hands off to a
+buggy worker and never checks its output has just added a layer of
+indirection to the same failure; the systems that actually help are the ones
+where decomposition narrows each sub-call's task enough to meaningfully raise
+its individual reliability, or where the multi-agent structure adds a real
+check (debate, voting, a distinct verifier) rather than just more calls to
+the same fallible process.
+
+## Main methods
+
+The methods above compose rather than compete — a production agent usually
+combines several: ReAct-style step-by-step reasoning as the base loop,
+tool calling as the action interface, an explicit editable plan for anything
+beyond a few steps, retrieval-augmented memory for anything that needs to
+persist, and a supervisor/worker split once a task is big enough that one
+agent's context would get overloaded doing all of it directly. The design
+choices that matter in practice are less "which paradigm" and more:
+how tightly is each tool call's output validated before being trusted;
+how is the loop terminated (a fixed step budget, a model-decided "done," a
+separate verifier); and how much of the trajectory is shown back to the
+model at each step versus summarized away.
+
+## When to use it / what can go wrong
+
+Agents earn their complexity on tasks that are genuinely multi-step,
+open-ended, and benefit from tool access the model doesn't have baked into
+its weights — looking something up, running code to check an answer,
+modifying real files or systems. They're overkill for anything answerable in
+one well-prompted call: adding a planning loop and tool-calling harness
+around a task that's really just "summarize this document" adds latency,
+cost, and new failure surface for no benefit.
+
+The concrete ways agents fail in practice, worth having specific names for
+rather than a vague "sometimes it doesn't work":
+
+- **Tool misuse**: calling a tool with malformed or semantically wrong
+  arguments (right tool, wrong parameters — e.g. searching for the wrong
+  entity because of a subtly misread earlier observation), or calling the
+  wrong tool entirely because its description overlaps with another tool's.
+  This gets worse, not better, as the number of available tools grows,
+  because the model has to correctly discriminate among more options at
+  every single step.
+- **Infinite or near-infinite loops**: an agent that calls the same tool
+  with the same or trivially varied arguments repeatedly, either because it
+  never registers that the result isn't changing, or because its
+  termination condition ("keep going until you have the answer") is never
+  satisfied by a task that's actually unanswerable with the tools it has.
+  Production systems guard against this with hard step budgets, repetition
+  detection (comparing consecutive actions/observations), and cost ceilings
+  — not because the model can't in principle be prompted to notice, but
+  because relying on the model's own self-monitoring as the *only* safeguard
+  is exactly the kind of single point of failure this chapter keeps coming
+  back to.
+- **Compounding hallucination across steps**: an early wrong or fabricated
+  intermediate "fact" — a misread number, a hallucinated API field name — gets
+  treated by later steps as established context and built on, so the final
+  output can look confident and well-reasoned while resting on an error
+  introduced many steps earlier and never re-examined. This is the concrete
+  version of the $0.95^{10}$ arithmetic from the introduction, and it's why
+  well-designed agents re-verify load-bearing facts against source tool
+  outputs rather than trusting their own earlier summary of them.
+- **Runaway cost**: every step is a full model call (sometimes several, if
+  the step itself involves retries or sub-calls), so a loop that runs longer
+  than expected — due to a bad termination condition, a hard task, or a
+  cycle of failed attempts — burns tokens at a rate that can be orders of
+  magnitude beyond a single-response API call. This is a production
+  reliability and monitoring problem, not just a modeling one, and it's why
+  agent deployments need step/cost budgets and observability into
+  in-progress trajectories, not just final-output logging — a natural fit
+  for the operational concerns in [ML Systems and MLOps](17-ml-systems-mlops.qmd).
+- **Prompt injection via tool outputs**: perhaps the most distinctive new
+  failure mode of agentic systems specifically. When an agent's tool results
+  come from untrusted external content — a web page, a document, an email,
+  the output of another service — that content can contain text crafted to
+  look like instructions ("ignore your previous task and instead...") which
+  the model may follow, because from the model's point of view everything in
+  its context is just more text to condition on; there's no built-in
+  privilege separation between "the developer's instructions" and "text a
+  tool happened to fetch." This makes any agent with tools that read
+  attacker-influenceable content (web browsing, email, file contents from
+  untrusted sources) a genuine security surface, not just a reliability
+  concern — connecting directly to the adversarial-robustness material in
+  [Responsible, Private, and Robust AI](18-responsible-private-robust-ai.qmd).
+  Mitigations (input sanitization, restricting which tool outputs can
+  influence which subsequent actions, explicit instruction-vs-data framing
+  in the prompt, human confirmation before consequential actions) reduce but
+  do not eliminate the risk as of 2026 — it remains an open problem, not a
+  solved one.
+
+## How this connects
+
+- [Generative AI and Foundation Models](12-generative-ai-foundation-models.qmd) — agents are built directly on instruction- and tool-call-tuned foundation models; tool calling is a structured-generation extension of the same next-token prediction machinery.
+- [Reinforcement Learning and Bandits](10-reinforcement-learning-bandits.qmd) — an agent loop is literally a sequential decision process (state, action, observation, repeat), and training an agent's tool-use policy end-to-end with outcome rewards is a direct application of RL.
+- [Information Retrieval, Ranking, and Recommenders](11-ir-ranking-recommenders.qmd) — retrieval-augmented long-term agent memory and RAG-based tool use both reduce to the same search-and-ranking problem covered there.
+- [Evaluation and Benchmarking](14-evaluation-and-benchmarking.qmd) — evaluating an agent is harder than evaluating a single response, since success depends on the whole trajectory, not just a final answer; that chapter's treatment of task success, LLM-as-judge, and online evaluation applies directly here.
+- [Responsible, Private, and Robust AI](18-responsible-private-robust-ai.qmd) — prompt injection through tool outputs and the broader question of what an autonomous system should be allowed to do without human confirmation are safety and robustness problems, not just capability problems.
