@@ -12,11 +12,13 @@ nearest-neighbor search, a generative model, an evaluation pipeline, and a
 safety layer. None of these are one technique wearing different hats — they
 are distinct problem framings that happen to compose.
 
-This chapter is the whole landscape in one page: eighteen framings, grouped
-into six questions a system's design answers, with the concrete concepts that
-let one chapter's ideas solve another chapter's problem. Read it first, then
-use it as the index whenever a later chapter references a neighbor — it's the
-map key, not just an introduction.
+This chapter is the whole landscape in one page: the eighteen framings
+covered by the eighteen chapters that follow it — this map is the book's
+nineteenth chapter, not a nineteenth framing — grouped into six questions a
+system's design answers, with the concrete concepts that let one chapter's
+ideas solve another chapter's problem. Read it first, then use it as the
+index whenever a later chapter references a neighbor — it's the map key,
+not just an introduction.
 
 ## Five questions that locate almost any method
 

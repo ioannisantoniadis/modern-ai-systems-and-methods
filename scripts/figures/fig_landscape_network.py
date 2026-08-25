@@ -3,14 +3,16 @@
 Real computation: networkx builds the graph and lays it out with a
 spring/force-directed algorithm (Fruchterman-Reingold) from the edge
 structure below, rather than a hand-positioned diagram. Node color marks
-which of the six narrative parts a chapter belongs to (matching docs/_quarto.yml).
+which of the six narrative parts a chapter belongs to (matching
+docs/_quarto.yml); node size scales with each chapter's degree in the graph,
+so heavily-connected hub chapters read as visually larger.
 """
 
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _theme import apply_theme, savefig, CATEGORICAL, INK, MUTED, GRIDLINE
+from _theme import apply_theme, savefig, CATEGORICAL, INK, MUTED, GRIDLINE, SURFACE
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -69,6 +71,11 @@ PART_NAMES = [
 ]
 
 
+# Light node colors read poorly with white text; use dark ink text on these
+# part colors instead so every label stays legible.
+LIGHT_PARTS = {3}  # "Decisions, selection, and generation" (gold, CATEGORICAL[3])
+
+
 def main() -> None:
     apply_theme()
 
@@ -77,12 +84,44 @@ def main() -> None:
         g.add_node(node, label=label, part=part)
     g.add_edges_from(EDGES)
 
-    pos = nx.spring_layout(g, k=1.0, iterations=300, seed=7)
+    # Roomier spacing than the default spring layout: a higher k pushes
+    # loosely-connected nodes apart so the center doesn't collapse into a
+    # single overlapping mass, and more iterations lets it settle cleanly.
+    pos = nx.spring_layout(g, k=1.7, iterations=500, seed=7)
 
-    fig, ax = plt.subplots(figsize=(11, 9.5))
-    fig.subplots_adjust(top=0.93, bottom=0.14)
+    fig, ax = plt.subplots(figsize=(12, 10.5))
+    fig.subplots_adjust(top=0.88, bottom=0.1, left=0.03, right=0.97)
 
-    nx.draw_networkx_edges(g, pos, ax=ax, edge_color=GRIDLINE, width=1.1, alpha=0.9)
+    # FancyArrowPatch edges (needed for curvature) don't feed ax.dataLim the
+    # way plain node scatter does, so autoscale alone under- or off-centers
+    # the view. Set explicit, evenly-padded limits from the actual node
+    # positions instead of trusting autoscale/margins.
+    xs = [p[0] for p in pos.values()]
+    ys = [p[1] for p in pos.values()]
+    x_pad = (max(xs) - min(xs)) * 0.36
+    y_pad = (max(ys) - min(ys)) * 0.28
+    ax.set_xlim(min(xs) - x_pad, max(xs) + x_pad)
+    ax.set_ylim(min(ys) - y_pad, max(ys) + y_pad)
+
+    # Curved edges (instead of straight chords) so overlapping connections
+    # separate visually into distinct arcs rather than fusing into a single
+    # gray smudge at each crossing. Degree scales node size so the handful
+    # of hub chapters (e.g. Generative AI, ML Systems) read as hubs at a
+    # glance, and everything else recedes a little.
+    nx.draw_networkx_edges(
+        g, pos, ax=ax, edge_color=GRIDLINE, width=0.9, alpha=0.55,
+        connectionstyle="arc3,rad=0.12", arrows=True, arrowstyle="-",
+        node_size=4200,
+    )
+
+    degrees = dict(g.degree())
+    min_deg, max_deg = min(degrees.values()), max(degrees.values())
+
+    def node_size(n: str) -> float:
+        if max_deg == min_deg:
+            return 3800.0
+        span = (degrees[n] - min_deg) / (max_deg - min_deg)
+        return 3600.0 + span * 1300.0
 
     legend_handles = []
     for part_idx, part_name in enumerate(PART_NAMES):
@@ -90,38 +129,40 @@ def main() -> None:
         nx.draw_networkx_nodes(
             g, pos, ax=ax, nodelist=nodelist,
             node_color=CATEGORICAL[part_idx % len(CATEGORICAL)],
-            node_size=3400, alpha=0.95, linewidths=1.4, edgecolors="white",
+            node_size=[node_size(n) for n in nodelist],
+            alpha=0.97, linewidths=1.6, edgecolors=SURFACE,
         )
         legend_handles.append(
             Line2D(
                 [0], [0], marker="o", linestyle="",
                 markerfacecolor=CATEGORICAL[part_idx % len(CATEGORICAL)],
-                markeredgecolor="white", markersize=11, label=part_name,
+                markeredgecolor=SURFACE, markersize=11, label=part_name,
             )
         )
 
-    labels = {n: d["label"] for n, d in g.nodes(data=True)}
-    nx.draw_networkx_labels(
-        g, pos, labels=labels, ax=ax, font_size=7.4, font_color="white",
-        font_weight="bold", verticalalignment="center",
-    )
+    for part_idx, text_color in ((idx, INK if idx in LIGHT_PARTS else "white")
+                                  for idx in range(len(PART_NAMES))):
+        labels = {n: d["label"] for n, d in g.nodes(data=True) if d["part"] == part_idx}
+        nx.draw_networkx_labels(
+            g, pos, labels=labels, ax=ax, font_size=7.0, font_color=text_color,
+            font_weight="bold", verticalalignment="center",
+        )
 
     ax.set_title(
-        "How the chapters connect — edges follow shared concepts and data flow, "
-        "node position from a force-directed layout on that structure",
+        "How the chapters connect — edges follow shared concepts and data flow\n"
+        "node position and size from a force-directed layout on that structure",
         fontsize=12, color=INK, pad=16,
     )
     fig.legend(
         handles=legend_handles, loc="lower center", ncol=3,
         fontsize=8.8, frameon=False, labelcolor=MUTED,
         bbox_to_anchor=(0.5, 0.0), bbox_transform=fig.transFigure,
-        columnspacing=1.4, handletextpad=0.6,
+        columnspacing=1.6, handletextpad=0.6, handlelength=1.2,
     )
     ax.set_axis_off()
-    ax.margins(0.1)
 
     out = Path(__file__).resolve().parents[2] / "docs" / "images" / "landscape-network.png"
-    fig.savefig(str(out), dpi=200, facecolor="#fcfcfb", bbox_inches=None)
+    fig.savefig(str(out), dpi=200, facecolor=SURFACE, bbox_inches=None)
     print(f"wrote {out}")
 
 
