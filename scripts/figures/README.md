@@ -29,3 +29,8 @@ for f in scripts/figures/fig_*.py; do python "$f"; done
 Every script imports `apply_theme()` and the shared palette from `_theme.py`
 so all figures across all chapters look like one system — new figure scripts
 should do the same rather than styling matplotlib ad hoc.
+
+`fig_social_preview.py` is the odd one out: it renders the same graph as
+`fig_landscape_network.py` at a 1280x640 (2:1) aspect ratio with the book
+title baked in, for use as the README hero image and the repo's GitHub
+social preview / LinkedIn link-preview thumbnail.

@@ -1,5 +1,7 @@
 # Modern AI Systems and Methods
 
+![How the chapters connect](docs/images/social-preview.png)
+
 A field guide to how modern AI actually fits together — nineteen chapters
 from supervised learning through agents, evaluation, and responsible AI, each
 with real computed visualizations and each explicitly linked to the chapters
