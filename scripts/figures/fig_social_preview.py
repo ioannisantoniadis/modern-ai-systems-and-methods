@@ -4,10 +4,10 @@ laid out for GitHub's social preview slot (1280x640) and link-preview crops
 doesn't fit without cropping into the legend or nodes.
 
 Reuses the exact same graph data, layout, and node styling as
-fig_landscape_network.py (curved edges, degree-scaled node size, dark text on
-the light gold nodes) so the repo has one consistent "mark" rather than two
-different visual identities — this is a reflow, not a redesign. Keep this in
-sync by hand if fig_landscape_network.py's styling changes again.
+fig_landscape_network.py (curved edges, degree-scaled node size) so the
+repo has one consistent "mark" rather than two different visual identities —
+this is a reflow, not a redesign. Keep this in sync by hand if
+fig_landscape_network.py's styling changes again.
 """
 
 import sys
@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _theme import apply_theme, CATEGORICAL, INK, MUTED, GRIDLINE, SURFACE
-from fig_landscape_network import NODES, EDGES, PART_NAMES, LIGHT_PARTS
+from fig_landscape_network import NODES, EDGES, PART_NAMES
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -76,13 +76,11 @@ def main() -> None:
             )
         )
 
-    for part_idx, text_color in ((idx, INK if idx in LIGHT_PARTS else "white")
-                                  for idx in range(len(PART_NAMES))):
-        labels = {n: d["label"] for n, d in g.nodes(data=True) if d["part"] == part_idx}
-        nx.draw_networkx_labels(
-            g, pos, labels=labels, ax=ax, font_size=5.8, font_color=text_color,
-            font_weight="bold", verticalalignment="center",
-        )
+    labels = {n: d["label"] for n, d in g.nodes(data=True)}
+    nx.draw_networkx_labels(
+        g, pos, labels=labels, ax=ax, font_size=5.8, font_color="white",
+        font_weight="bold", verticalalignment="center",
+    )
 
     fig.text(
         0.02, 0.965, "Modern AI Systems and Methods",

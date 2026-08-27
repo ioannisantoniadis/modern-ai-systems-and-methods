@@ -71,11 +71,6 @@ PART_NAMES = [
 ]
 
 
-# Light node colors read poorly with white text; use dark ink text on these
-# part colors instead so every label stays legible.
-LIGHT_PARTS = {3}  # "Decisions, selection, and generation" (gold, CATEGORICAL[3])
-
-
 def main() -> None:
     apply_theme()
 
@@ -140,13 +135,11 @@ def main() -> None:
             )
         )
 
-    for part_idx, text_color in ((idx, INK if idx in LIGHT_PARTS else "white")
-                                  for idx in range(len(PART_NAMES))):
-        labels = {n: d["label"] for n, d in g.nodes(data=True) if d["part"] == part_idx}
-        nx.draw_networkx_labels(
-            g, pos, labels=labels, ax=ax, font_size=7.0, font_color=text_color,
-            font_weight="bold", verticalalignment="center",
-        )
+    labels = {n: d["label"] for n, d in g.nodes(data=True)}
+    nx.draw_networkx_labels(
+        g, pos, labels=labels, ax=ax, font_size=7.0, font_color="white",
+        font_weight="bold", verticalalignment="center",
+    )
 
     ax.set_title(
         "How the chapters connect — edges follow shared concepts and data flow\n"
