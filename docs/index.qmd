@@ -29,7 +29,9 @@ Three commitments shape everything here:
 
 ## How this site is organized
 
-Nineteen chapters, grouped into seven parts that follow one narrative arc:
+Nineteen chapters — [the map](chapters/00-landscape-and-map.qmd) plus the
+eighteen framings it maps — grouped into seven parts that follow one
+narrative arc:
 predicting from labeled data, modeling uncertainty and hidden structure,
 learning representations, making decisions and generating content, knowing
 whether any of it actually works, and operating it reliably and responsibly in
