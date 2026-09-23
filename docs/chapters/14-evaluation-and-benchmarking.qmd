@@ -119,8 +119,8 @@ post-hoc corrections layered on top of an existing model's scores.
 
 ### Classification and ranking metrics
 
-Accuracy, precision, recall, F1, ROC-AUC for classification, and nDCG, MRR,
-and precision@k for ranking are covered in full where they're the primary
+Accuracy, precision, recall, F1, ROC-AUC for classification, and Recall@K,
+MRR, nDCG, and MAP for ranking are covered in full where they're the primary
 object of study — [Supervised Learning](01-supervised-learning.qmd) for the
 classification metrics and their precision/recall trade-off, and
 [Information Retrieval, Ranking, and Recommenders](11-ir-ranking-recommenders.qmd)
@@ -313,7 +313,7 @@ and Experimentation](15-causal-inference-experimentation.qmd).
 ## How this connects
 
 - [Supervised Learning](01-supervised-learning.qmd) — precision, recall, ROC-AUC, and the bias-variance framing of generalization are the classification-metric foundation this chapter points back to rather than re-deriving.
-- [Information Retrieval, Ranking, and Recommenders](11-ir-ranking-recommenders.qmd) — nDCG, MRR, and precision@k are defined there in full, and inherit the same offline/online divergence concerns developed here.
+- [Information Retrieval, Ranking, and Recommenders](11-ir-ranking-recommenders.qmd) — Recall@K, MRR, nDCG, and MAP are defined there in full, and inherit the same offline/online divergence concerns developed here.
 - [Generative AI and Foundation Models](12-generative-ai-foundation-models.qmd) — factuality, groundedness, helpfulness, and diversity are exactly the properties generative model evaluation needs beyond raw likelihood, and are assessed with the human/LLM-judge machinery developed here.
 - [AI Agents, Tool Use, and Multi-Agent Systems](13-ai-agents-tool-use.qmd) — evaluating an agent means evaluating a whole trajectory's success, not a single response, which raises the stakes on getting judge validation and online testing right rather than trusting a single offline proxy.
 - [Causal Inference and Experimentation](15-causal-inference-experimentation.qmd) — A/B testing methodology (randomization, power, significance, peeking) is developed in full there; this chapter treats it as evaluation's final arbiter rather than repeating the statistics.

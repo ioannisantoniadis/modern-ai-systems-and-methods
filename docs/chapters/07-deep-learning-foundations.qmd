@@ -134,10 +134,15 @@ modest progress along the valley floor in a fixed step budget; SGD with
 momentum picks up "velocity" and visibly oscillates back and forth across
 the narrow valley before it manages to align with the valley's direction;
 Adam's per-parameter adaptive scaling lets it descend the steep wall and
-then accelerate along the shallow valley floor efficiently, reaching much
-closer to the true minimum at $(1, 1)$ in the same number of steps.
+then accelerate along the shallow valley floor efficiently, converging
+smoothly to the true minimum at $(1, 1)$ in the same number of steps that
+leaves plain SGD still far from it. Momentum eventually gets there too —
+its oscillation is a bumpier path, not a worse destination — so the real
+three-way contrast in this experiment is SGD's slow, incomplete progress
+against momentum's and Adam's both-successful-but-differently-shaped paths
+to essentially the same point.
 
-![Three optimizers — plain SGD, SGD with momentum, and Adam — started from the same point $(-1.5, 2.0)$ on the Rosenbrock loss surface (contours shown on a log scale for visibility). SGD's small fixed step size makes only modest progress; momentum's accumulated velocity causes visible oscillation across the narrow valley before it aligns with the descent direction; Adam's adaptive per-parameter scaling reaches nearest to the true minimum, marked with an X at (1, 1), in the same step budget.](../images/deeplearning_optimizer_trajectories.png){#fig-deeplearning-optimizer-trajectories}
+![Three optimizers — plain SGD, SGD with momentum, and Adam — started from the same point $(-1.5, 2.0)$ on the Rosenbrock loss surface (contours shown on a log scale for visibility). SGD's small fixed step size leaves it far from the minimum in this step budget; momentum's accumulated velocity causes visible oscillation across the narrow valley before it aligns with the descent direction; Adam's adaptive per-parameter scaling reaches the same neighborhood of the true minimum, marked with an X at (1, 1), without momentum's oscillation along the way.](../images/deeplearning_optimizer_trajectories.png){#fig-deeplearning-optimizer-trajectories}
 
 ### Attention, briefly derived
 

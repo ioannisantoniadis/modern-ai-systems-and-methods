@@ -112,10 +112,9 @@ chapter, applied here to features rather than to samples.
 The practical consequence: 2-3 layers is the typical sweet spot for most GNN
 benchmarks. Beyond that, accuracy on node-classification tasks tends to drop,
 not because the model is overfitting but because the representations
-literally stop carrying useful, node-specific signal. Section 3 of the figure
-below shows this directly on a small graph: mean pairwise cosine similarity
-between node representations rises sharply after just two rounds of
-propagation. Mitigations exist — residual/skip connections that let a layer
+literally stop carrying useful, node-specific signal. The figure below shows
+this directly on a small graph: mean pairwise cosine similarity between node
+representations rises sharply after just two rounds of propagation. Mitigations exist — residual/skip connections that let a layer
 retain its pre-aggregation state, PairNorm and other normalization schemes
 that explicitly re-separate representations, "jumping knowledge" architectures
 that concatenate representations from every layer rather than just the last —
@@ -156,8 +155,9 @@ nodes (new users, new items, new molecules) appear after training.
 The Graph Attention Network replaces GCN's fixed averaging with **learned,
 content-dependent attention weights** over neighbors — directly analogous to
 how self-attention in a Transformer (see
-[Deep Learning Foundations](07-deep-learning-foundations.qmd)) replaces a
-fixed convolution with query/key-driven weighting. For node $v$ and each
+[Deep Learning Foundations](07-deep-learning-foundations.qmd)) replaces
+recurrence's fixed, step-by-step processing with learned query/key-driven
+weighting between all positions. For node $v$ and each
 neighbor $u \in \mathcal{N}(v)$, GAT computes an unnormalized attention score
 from both nodes' current features, typically
 
@@ -316,10 +316,10 @@ type) would have used.
 - [Sequence, Time-Series, and State Models](08-sequence-state-models.qmd) —
   GAT's attention mechanism is the same query/key/value idea used by
   self-attention in sequence models, applied over a node's graph neighbors
-  instead of over positions in a sequence; and the over-smoothing argument
-  above (repeated stochastic-matrix multiplication converging to a
-  stationary distribution) is the same Markov-chain convergence logic used
-  to describe stationary behavior of recurrent state updates.
+  instead of over positions in a sequence; and the Markov chain and
+  transition matrix that open that chapter are the same discrete-state
+  object whose repeated application (as a row-normalized adjacency matrix)
+  drives the over-smoothing argument above.
 - [Sampling and Approximate Inference](05-sampling-approximate-inference.qmd)
   — the random-walk view of mean aggregation ties GNN over-smoothing directly
   to Markov chain stationary distributions and mixing, the same machinery

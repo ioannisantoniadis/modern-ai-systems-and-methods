@@ -100,11 +100,11 @@ volatility regime) and three possible emission symbols ("small," "medium,"
 transition matrix, noisy observations are simulated from the emission
 matrix, and Viterbi is run on the observations alone — without ever seeing
 the true hidden path — to recover its best guess. The decoded path tracks
-the true path closely but not perfectly: the highlighted mismatches are
-exactly where the emitted symbol was ambiguous enough (a "small" move
-emitted during a volatile period, or a "medium" move emitted during a calm
-one) that the most probable explanation, given only the transition and
-emission probabilities, differs from what actually generated it. This is
+the true path closely but not perfectly: the highlighted mismatches cluster
+around emissions that are ambiguous between the two states — mostly
+"medium" moves, which have meaningful probability under both "calm" and
+"volatile" — where the most probable explanation, given only the transition
+and emission probabilities, differs from what actually generated it. This is
 the honest picture of what Viterbi gives you: the single best explanation
 consistent with the model and the observed evidence, not a guarantee of
 recovering the literal truth.

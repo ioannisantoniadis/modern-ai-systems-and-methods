@@ -78,7 +78,8 @@ similarity.
 
 **Exchangeability** — the property that a joint distribution over a sequence
 of random variables is unchanged under any permutation of their order; weaker
-than i.i.d. but the key assumption conformal prediction relies on.
+than i.i.d. but the key assumption conformal prediction relies on. See
+[Conformal Prediction](chapters/16-conformal-prediction.qmd).
 
 **Function calling / tool use** — an LLM producing structured output (a
 function name and arguments) that a surrounding system executes, feeding the
@@ -97,7 +98,8 @@ Models](chapters/08-sequence-state-models.qmd).
 
 **Instrumental variable** — a variable that affects the treatment but has no
 direct effect on the outcome except through the treatment, used to estimate
-causal effects under unobserved confounding.
+causal effects under unobserved confounding. See
+[Causal Inference](chapters/15-causal-inference-experimentation.qmd).
 
 **Latent variable** — an unobserved variable in a model that helps explain
 the structure of the observed data (a cluster identity, a topic, a hidden
@@ -151,6 +153,7 @@ encoding assumptions or existing beliefs.
 
 **Propensity score** — the probability of receiving treatment given observed
 covariates; used to adjust for confounding in observational causal estimates.
+See [Causal Inference](chapters/15-causal-inference-experimentation.qmd).
 
 **RAG (retrieval-augmented generation)** — grounding a generative model's
 output by retrieving relevant documents/passages and inserting them into its
@@ -179,7 +182,8 @@ tokenization (e.g. byte-pair encoding).
 
 **Uplift modeling** — predicting the *incremental* effect of a treatment on
 an individual (rather than their outcome under treatment alone), used to
-target interventions at the people most affected by them.
+target interventions at the people most affected by them. See
+[Causal Inference](chapters/15-causal-inference-experimentation.qmd).
 
 **Variational inference** — approximating an intractable posterior by
 optimizing over a family of simpler distributions to minimize a divergence

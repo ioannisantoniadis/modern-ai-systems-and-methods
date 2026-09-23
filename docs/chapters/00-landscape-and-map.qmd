@@ -82,8 +82,8 @@ scales that idea with layered, differentiable models trained by gradient
 descent — less a single application and more a modeling toolkit reused across
 almost every other chapter. **[Sequence, Time-Series, and State
 Models](08-sequence-state-models.qmd)** adds order and memory: how the past
-constrains the present. **[Graph Neural
-Networks](09-graph-neural-networks.qmd)** adds relational structure: how a
+constrains the present. **[Graph Neural Networks and Structured
+Data](09-graph-neural-networks.qmd)** adds relational structure: how a
 node's neighbors constrain what it means.
 
 ### 4. Decisions, selection, and generation

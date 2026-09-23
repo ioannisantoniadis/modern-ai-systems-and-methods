@@ -177,7 +177,7 @@ data and settles each Gaussian onto one of the underlying clusters, as shown
 in @fig-latent-gmm-em on synthetic 2D data from three true clusters with
 distinct shapes.
 
-![A Gaussian mixture model fit by EM on synthetic 2D data drawn from three true clusters of different sizes, spreads, and orientations. Points are colored by their final (hard-assigned) posterior-most-likely cluster; the ellipses show each fitted component's mean and 2-sigma covariance contour. Notice the middle cluster's ellipse is visibly tilted and elongated rather than circular — the model recovered an oriented, non-spherical covariance structure that a distance-based method like k-means, which implicitly assumes spherical clusters, could not represent.](../images/latent_gmm_em.png){#fig-latent-gmm-em}
+![A Gaussian mixture model fit by EM on synthetic 2D data drawn from three true, equally-sized clusters with different spreads and orientations. Points are colored by their final (hard-assigned) posterior-most-likely cluster; the ellipses show each fitted component's mean and 2-sigma covariance contour. Notice the middle cluster's ellipse is visibly tilted and elongated rather than circular — the model recovered an oriented, non-spherical covariance structure that a distance-based method like k-means, which implicitly assumes spherical clusters, could not represent.](../images/latent_gmm_em.png){#fig-latent-gmm-em}
 
 The fitted ellipses tracking the true cluster shapes, including the sheared
 one, is the concrete payoff of modeling $\Sigma_k$ as a full covariance
@@ -293,8 +293,7 @@ decision.
 - [Probabilistic Modeling](03-probabilistic-modeling.qmd) supplies every
   primitive this chapter builds with — Bayes' rule, likelihoods, conjugate
   updates — and the Gaussian mixture model derived above is the direct
-  latent-variable extension of that chapter's Naive Bayes and GMM
-  introduction.
+  completion of that chapter's GMM sketch, fit for the first time via EM.
 - [Sampling and Approximate Inference](05-sampling-approximate-inference.qmd)
   is where you go the moment EM's exact E-step becomes intractable (as it
   already is for LDA above) — MCMC and variational inference are the general

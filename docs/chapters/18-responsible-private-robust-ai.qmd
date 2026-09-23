@@ -74,26 +74,16 @@ to be made explicitly, with the people affected and the nature of the harm
 in mind, not defaulted to whichever metric a fairness toolkit happens to
 report first.
 
-@fig-fairness-privacy (left panel) makes the fairness/accuracy tradeoff
-concrete on a synthetic biased dataset, where a sensitive attribute
-correlates both with a predictive feature and with the label directly (a
-stand-in for historical bias). Starting from a group-blind decision
-threshold, adjusting the classification threshold per group traces out a
-frontier: closing the demographic parity gap costs overall accuracy, and
-the curve shows how much — this is not a hypothetical tension, it's a
-direct, measurable one for any dataset where the sensitive attribute
-carries real predictive signal correlated with historical outcomes.
-
-![Left: sweeping a per-group decision threshold on a synthetic biased
-classifier traces out the tradeoff between overall accuracy and the
-demographic parity gap between groups — closing the gap costs measurable
-accuracy on this dataset, starting from the group-blind threshold marked
-with a diamond. Right: adding calibrated Laplace noise to a simple aggregate
-statistic under differential privacy — mean absolute error against the true
-value rises sharply as the privacy budget epsilon shrinks (more
-noise, more privacy), and flattens out once epsilon is large enough that
-privacy is
-essentially not being enforced.](../images/responsible_fairness_and_privacy.png){#fig-fairness-privacy}
+@fig-fairness-privacy (left panel, shown below once its right panel's
+privacy terms are introduced) makes the fairness/accuracy tradeoff concrete
+on a synthetic biased dataset, where a sensitive attribute correlates both
+with a predictive feature and with the label directly (a stand-in for
+historical bias). Starting from a group-blind decision threshold, adjusting
+the classification threshold per group traces out a frontier: closing the
+demographic parity gap costs overall accuracy, and the curve shows how much
+— this is not a hypothetical tension, it's a direct, measurable one for any
+dataset where the sensitive attribute carries real predictive signal
+correlated with historical outcomes.
 
 ## Privacy
 
@@ -142,6 +132,17 @@ quickly stops buying any meaningful privacy at all — there's a real
 inflection point, not a smooth linear tradeoff, and choosing $\varepsilon$
 in practice means picking a point deliberately rather than defaulting to a
 library's example value.
+
+![Left: sweeping a per-group decision threshold on a synthetic biased
+classifier traces out the tradeoff between overall accuracy and the
+demographic parity gap between groups — closing the gap costs measurable
+accuracy on this dataset, starting from the group-blind threshold marked
+with a diamond. Right: adding calibrated Laplace noise to a simple aggregate
+statistic under differential privacy — mean absolute error against the true
+value rises sharply as the privacy budget epsilon shrinks (more
+noise, more privacy), and flattens out once epsilon is large enough that
+privacy is
+essentially not being enforced.](../images/responsible_fairness_and_privacy.png){#fig-fairness-privacy}
 
 A crucial property that makes DP practical for real systems is
 **composition**: the privacy loss of releasing multiple DP-protected

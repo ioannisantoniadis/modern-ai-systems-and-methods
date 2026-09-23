@@ -219,7 +219,9 @@ differentiable transformations trained end-to-end by gradient descent on
 exactly the same ERM objective as everything above, just with a vastly larger
 and more expressive hypothesis class, and typically with representation
 learning folded in (the network learns its own features rather than requiring
-them to be hand-engineered). Chapters 6–9 go deep on this; the point here is
+them to be hand-engineered). [Representation Learning](06-representation-learning.qmd)
+through [Graph Neural Networks and Structured Data](09-graph-neural-networks.qmd)
+go deep on this; the point here is
 that nothing about the underlying learning problem changes — bias-variance,
 loss function choice, and regularization (weight decay, dropout, early
 stopping) all still apply, just at a scale and with an optimization landscape
