@@ -1,13 +1,12 @@
-"""Widescreen banner: same chapter-connection graph as fig_landscape_network.py,
-laid out for GitHub's social preview slot (1280x640) and link-preview crops
-(LinkedIn, Slack, etc.), which fig_landscape_network.py's near-square figure
-doesn't fit without cropping into the legend or nodes.
+"""Widescreen banner for GitHub's social preview slot (1280x640) and link-preview crops.
 
-Reuses the exact same graph data, layout, and node styling as
-fig_landscape_network.py (curved edges, degree-scaled node size) so the
-repo has one consistent "mark" rather than two different visual identities —
-this is a reflow, not a redesign. Keep this in sync by hand if
-fig_landscape_network.py's styling changes again.
+Same chapter-connection graph as fig_landscape_network.py (same NODES, EDGES and
+PART_NAMES, imported, not copied), laid out for a wide banner: one column per part
+of the book, in reading order, with each part's chapters stacked in its column.
+A force-directed layout (the in-book figure's) overlaps nodes at this aspect
+ratio; columns cannot overlap, use the whole canvas, and read like the book. Part
+names head their columns, so every node is labeled directly and no legend is
+needed.
 """
 
 import sys
@@ -18,87 +17,97 @@ from _theme import apply_theme, CATEGORICAL, INK, MUTED, GRIDLINE, SURFACE
 from fig_landscape_network import NODES, EDGES, PART_NAMES
 
 import matplotlib.pyplot as plt
-import networkx as nx
-from matplotlib.lines import Line2D
+from matplotlib.patches import FancyBboxPatch, PathPatch
+from matplotlib.path import Path as MplPath
+
+W, H = 12.8, 6.4                  # figure inches = data units
+COL_X0, COL_X1 = 1.15, 11.65      # centers of first and last columns
+ROW_TOP, ROW_BOTTOM = 2.55, 5.95  # band the pills occupy (y grows downward)
+PILL_W, PILL_H = 1.62, 0.52
+
+
+def part_color(part: int) -> str:
+    return CATEGORICAL[part % len(CATEGORICAL)]
+
+
+def layout() -> dict[str, tuple[float, float]]:
+    """Column per part; chapters of a part spread evenly down the band, centered."""
+    pos = {}
+    n_parts = len(PART_NAMES)
+    max_rows = max(sum(1 for _, p in NODES.values() if p == k) for k in range(n_parts))
+    row_gap = (ROW_BOTTOM - ROW_TOP) / (max_rows - 1)
+    for part in range(n_parts):
+        x = COL_X0 + part * (COL_X1 - COL_X0) / (n_parts - 1)
+        members = [n for n, (_, p) in NODES.items() if p == part]
+        span = (len(members) - 1) * row_gap
+        y0 = (ROW_TOP + ROW_BOTTOM) / 2 - span / 2
+        for i, n in enumerate(members):
+            pos[n] = (x, y0 + i * row_gap)
+    return pos
+
+
+def edge_path(a: tuple[float, float], b: tuple[float, float]) -> MplPath:
+    """Cubic curve from a's right edge to b's left edge (or a side arc within a column)."""
+    (xa, ya), (xb, yb) = a, b
+    if abs(xa - xb) < 1e-9:  # same column: bow out to the left
+        x = xa - PILL_W / 2
+        bow = 0.35 + 0.08 * abs(yb - ya)
+        verts = [(x, ya), (x - bow, ya), (x - bow, yb), (x, yb)]
+    else:
+        if xa > xb:
+            (xa, ya), (xb, yb) = (xb, yb), (xa, ya)
+        x0, x1 = xa + PILL_W / 2, xb - PILL_W / 2
+        dx = (x1 - x0) * 0.45
+        verts = [(x0, ya), (x0 + dx, ya), (x1 - dx, yb), (x1, yb)]
+    codes = [MplPath.MOVETO, MplPath.CURVE4, MplPath.CURVE4, MplPath.CURVE4]
+    return MplPath(verts, codes)
 
 
 def main() -> None:
     apply_theme()
+    pos = layout()
 
-    g = nx.Graph()
-    for node, (label, part) in NODES.items():
-        g.add_node(node, label=label, part=part)
-    g.add_edges_from(EDGES)
-
-    pos = nx.spring_layout(g, k=1.7, iterations=500, seed=7)
-
-    # 12.8 x 6.4in @ 200dpi = 2560x1280px, exactly 2x GitHub's recommended
-    # 1280x640 social preview size (retina-sharp, GitHub downsamples).
-    fig, ax = plt.subplots(figsize=(12.8, 6.4))
-    fig.subplots_adjust(left=0.02, right=0.98, top=0.82, bottom=0.12)
-
-    xs = [p[0] for p in pos.values()]
-    ys = [p[1] for p in pos.values()]
-    x_pad = (max(xs) - min(xs)) * 0.18
-    y_pad = (max(ys) - min(ys)) * 0.28
-    ax.set_xlim(min(xs) - x_pad, max(xs) + x_pad)
-    ax.set_ylim(min(ys) - y_pad, max(ys) + y_pad)
-
-    nx.draw_networkx_edges(
-        g, pos, ax=ax, edge_color=GRIDLINE, width=0.8, alpha=0.55,
-        connectionstyle="arc3,rad=0.12", arrows=True, arrowstyle="-",
-        node_size=2700,
-    )
-
-    degrees = dict(g.degree())
-    min_deg, max_deg = min(degrees.values()), max(degrees.values())
-
-    def node_size(n: str) -> float:
-        if max_deg == min_deg:
-            return 2400.0
-        span = (degrees[n] - min_deg) / (max_deg - min_deg)
-        return 2300.0 + span * 850.0
-
-    legend_handles = []
-    for part_idx, part_name in enumerate(PART_NAMES):
-        nodelist = [n for n, d in g.nodes(data=True) if d["part"] == part_idx]
-        nx.draw_networkx_nodes(
-            g, pos, ax=ax, nodelist=nodelist,
-            node_color=CATEGORICAL[part_idx % len(CATEGORICAL)],
-            node_size=[node_size(n) for n in nodelist],
-            alpha=0.97, linewidths=1.3, edgecolors=SURFACE,
-        )
-        legend_handles.append(
-            Line2D(
-                [0], [0], marker="o", linestyle="",
-                markerfacecolor=CATEGORICAL[part_idx % len(CATEGORICAL)],
-                markeredgecolor=SURFACE, markersize=9, label=part_name,
-            )
-        )
-
-    labels = {n: d["label"] for n, d in g.nodes(data=True)}
-    nx.draw_networkx_labels(
-        g, pos, labels=labels, ax=ax, font_size=5.8, font_color="white",
-        font_weight="bold", verticalalignment="center",
-    )
-
-    fig.text(
-        0.02, 0.965, "Modern AI Systems and Methods",
-        fontsize=22, fontweight="700", color=INK, ha="left", va="top",
-    )
-    fig.text(
-        0.02, 0.905,
-        "A field guide to how modern AI fits together — how the chapters connect",
-        fontsize=11.5, color=MUTED, ha="left", va="top",
-    )
-
-    fig.legend(
-        handles=legend_handles, loc="lower center", ncol=6,
-        fontsize=8.0, frameon=False, labelcolor=MUTED,
-        bbox_to_anchor=(0.5, 0.0), bbox_transform=fig.transFigure,
-        columnspacing=1.1, handletextpad=0.5,
-    )
+    # 12.8 x 6.4in @ 200dpi = 2560x1280px, 2x GitHub's recommended 1280x640.
+    fig = plt.figure(figsize=(W, H))
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_xlim(0, W)
+    ax.set_ylim(H, 0)
     ax.set_axis_off()
+
+    for a, b in EDGES:
+        ax.add_patch(PathPatch(edge_path(pos[a], pos[b]), facecolor="none",
+                               edgecolor=GRIDLINE, linewidth=1.0, alpha=0.75, zorder=1))
+
+    for node, (label, part) in NODES.items():
+        x, y = pos[node]
+        ax.add_patch(FancyBboxPatch(
+            (x - PILL_W / 2, y - PILL_H / 2), PILL_W, PILL_H,
+            boxstyle=f"round,pad=0,rounding_size={PILL_H / 2}",
+            facecolor=part_color(part), edgecolor=SURFACE, linewidth=2, zorder=2,
+        ))
+        ax.text(x, y, label, ha="center", va="center", fontsize=8.6,
+                fontweight="bold", color="white", linespacing=1.15, zorder=3)
+
+    # Column headers: the part names, wrapped, with a color key dot.
+    for part, name in enumerate(PART_NAMES):
+        x = COL_X0 + part * (COL_X1 - COL_X0) / (len(PART_NAMES) - 1)
+        words, lines, line = name.split(), [], ""
+        for w in words:
+            if len(line) + len(w) + 1 > 25 and line:
+                lines.append(line)
+                line = w
+            else:
+                line = f"{line} {w}".strip()
+        lines.append(line)
+        ax.plot([x], [1.55], "o", color=part_color(part), markersize=7, zorder=3)
+        ax.text(x, 1.7, "\n".join(lines), ha="center", va="top", fontsize=8.6,
+                color=MUTED, linespacing=1.2)
+
+    ax.text(0.35, 0.42, "Modern AI Systems and Methods", fontsize=22, fontweight="bold",
+            color=INK, ha="left", va="top")
+    ax.text(0.35, 1.0, "A field guide to how modern AI fits together — "
+            "18 chapters in six parts, and how they connect",
+            fontsize=11.5, color=MUTED, ha="left", va="top")
 
     out = Path(__file__).resolve().parents[2] / "docs" / "images" / "social-preview.png"
     fig.savefig(str(out), dpi=200, facecolor=SURFACE, bbox_inches=None)
