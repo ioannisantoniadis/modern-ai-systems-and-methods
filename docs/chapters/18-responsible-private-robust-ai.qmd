@@ -51,7 +51,7 @@ incompatible notions of what "fair" means:
   the true outcome. This is the right target when the base rates
   themselves are considered unjust or a downstream effect of the bias
   you're trying to correct for.
-- **Equalized odds**: true positive rate and false positive rate are both
+- **Equalized odds** [@hardt2016equality]: true positive rate and false positive rate are both
   equal across groups, conditional on the true label. This is the right
   target when you want the model's *errors*, not just its output rate, to
   be distributed equally.
@@ -62,12 +62,18 @@ incompatible notions of what "fair" means:
   $p$ should correspond to an actual positive rate of $p$ — the model's
   confidence should mean the same thing regardless of group membership.
 
-A foundational and often underappreciated result is that, except in
-degenerate cases, **demographic parity, equalized odds, and calibration by
-group cannot all be satisfied simultaneously** when the base rate of the
-outcome differs across groups — which is common, since base rates differing
-across groups is frequently the very thing that motivated looking at
-fairness in the first place. Choosing a fairness metric is therefore not a
+A foundational and often underappreciated result is that these criteria
+conflict whenever the base rate of the outcome differs across groups —
+which is common, since base rates differing across groups is frequently the
+very thing that motivated looking at fairness in the first place.
+**Calibration by group and equalized odds cannot both hold** except in
+degenerate cases (perfect prediction, or equal base rates)
+[@kleinberg2016inherent; @chouldechova2017fair]. And **demographic parity
+and equalized odds cannot both hold** for any classifier that is better than
+chance: a group's positive-prediction rate is
+$\mathrm{TPR}\cdot\pi + \mathrm{FPR}\cdot(1-\pi)$ for base rate $\pi$, so
+equal error rates with unequal base rates force unequal positive rates
+unless $\mathrm{TPR} = \mathrm{FPR}$. Choosing a fairness metric is therefore not a
 technical detail to defer to an engineer; it's a value judgment about what
 kind of equality matters for the specific decision being made, and it needs
 to be made explicitly, with the people affected and the nature of the harm
@@ -97,7 +103,7 @@ quasi-identifiers (zip code, birth date, gender) remain, a fact demonstrated
 repeatedly on supposedly anonymized datasets by cross-referencing them
 against other public records.
 
-**Differential privacy (DP)** is the formal answer to that weakness. A
+**Differential privacy (DP)** [@dwork2006calibrating] is the formal answer to that weakness. A
 randomized mechanism $M$ is $\varepsilon$-differentially private if for any
 two datasets $D, D'$ differing in a single record, and any output set $S$,
 
@@ -156,7 +162,7 @@ aggregate guarantee silently degrades to nothing even if each individual
 query looked private in isolation.
 
 Beyond central DP applied to a single trusted data holder, **federated
-learning** trains a shared model across decentralized data without
+learning** [@mcmahan2016communication] trains a shared model across decentralized data without
 centralizing the raw data itself — only model updates (gradients or weight
 deltas) leave each device — which reduces but does not eliminate leakage
 risk, since gradients themselves can sometimes be inverted to recover
@@ -211,11 +217,11 @@ A model's accuracy on its test set says nothing about how it behaves under
 deployment conditions that isn't adversarial, just different, and the same
 phenomenon covered as data drift in
 [ML Systems and MLOps](17-ml-systems-mlops.qmd). **Adversarial examples**
-are the deliberately engineered version: small, often imperceptible
+[@szegedy2013intriguing; @goodfellow2014explaining] are the deliberately engineered version: small, often imperceptible
 perturbations to an input, specifically constructed (usually via gradients
 of the model's own loss function) to flip its prediction, which demonstrate
 that high test accuracy and genuine robustness are not the same property at
-all. For language models specifically, **prompt injection** is the
+all. For language models specifically, **prompt injection** [@greshake2023not] is the
 analogous attack: input (often from an untrusted source the model is asked
 to process, like a webpage or document) crafted to override the model's
 intended instructions, a first-class security concern for any system

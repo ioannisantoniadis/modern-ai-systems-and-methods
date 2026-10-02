@@ -135,10 +135,10 @@ Three canonical strategies, each trading off exploration differently:
   score precisely because their estimate is unreliable, which automatically
   directs exploration toward arms that are either promising or under-tested,
   and lets it taper off (in expectation, logarithmically) as evidence
-  accumulates. UCB1's regret bound is $O(\log T)$, provably better than fixed
+  accumulates. UCB1's regret bound is $O(\log T)$ [@auer2002finite], provably better than fixed
   epsilon-greedy's $O(T)$ asymptotically, which is exactly the crossover
   visible in the right panel of the figure.
-- **Thompson sampling.** Maintain a posterior distribution over each arm's
+- **Thompson sampling** [@thompson1933likelihood]. Maintain a posterior distribution over each arm's
   true reward rate (e.g. a Beta distribution for Bernoulli rewards, updated
   conjugately after every pull — the same conjugate-update machinery
   described in [Probabilistic Modeling](03-probabilistic-modeling.qmd)), and
@@ -180,7 +180,7 @@ tradeoff that shows up throughout
 [Supervised Learning](01-supervised-learning.qmd), here playing out across
 time rather than across model complexity.
 
-**Q-learning** applies TD updates directly to the action-value function, and
+**Q-learning** [@watkins1992q] applies TD updates directly to the action-value function, and
 does so *off-policy*: it updates $Q(s, a)$ using the best next action
 regardless of which action the exploration policy (e.g. epsilon-greedy)
 actually took —
@@ -243,14 +243,15 @@ some potential improvement for reliability given only fixed data.
 
 ### RLHF: RL as an alignment tool
 
-Reinforcement learning from human feedback (RLHF) is the technique that
+Reinforcement learning from human feedback (RLHF)
+[@christiano2017deep; @ouyang2022training] is the technique that
 turns human preference judgments into a training signal for large language
 models. The typical pipeline: collect pairs of model outputs, have humans (or
 a model trained to imitate them) indicate which is preferred; train a
 **reward model** to predict that preference (usually via a Bradley-Terry-style
 pairwise loss); then optimize the language model's policy — token generation
 as sequential action selection — against that learned reward using a
-policy-gradient method (commonly PPO, an actor-critic method with a clipped
+policy-gradient method (commonly PPO [@schulman2017proximal], an actor-critic method with a clipped
 objective for training stability), while penalizing large departures from a
 reference policy (usually via a KL penalty) to keep generations coherent and
 prevent reward-hacking exploits of an imperfect reward model. Structurally,

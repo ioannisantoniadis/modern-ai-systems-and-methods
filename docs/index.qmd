@@ -1,6 +1,4 @@
----
-title: "Welcome"
----
+# Welcome {.unnumbered}
 
 Modern AI is not one ladder of methods — it's a set of overlapping problem
 framings that a real system usually combines. A search assistant might use
@@ -29,8 +27,8 @@ Three commitments shape everything here:
 
 ## How this site is organized
 
-Nineteen chapters — [the map](chapters/00-landscape-and-map.qmd) plus the
-eighteen framings it maps — grouped into seven parts that follow one
+Eighteen chapters plus [the map](chapters/00-landscape-and-map.qmd) that
+connects them, grouped into seven parts that follow one
 narrative arc:
 predicting from labeled data, modeling uncertainty and hidden structure,
 learning representations, making decisions and generating content, knowing

@@ -43,7 +43,7 @@ trained model.
 The prediction set at level $1 - \alpha$ for a new input $x_{n+1}$ is then
 every candidate value $y$ whose nonconformity score falls at or below the
 $\lceil (n+1)(1-\alpha) \rceil / n$ empirical quantile of the calibration
-scores — a small finite-sample correction to the naive $(1-\alpha)$ quantile
+scores [@angelopoulos2021gentle] — a small finite-sample correction to the naive $(1-\alpha)$ quantile
 that accounts for including the test point itself in the exchangeable
 sequence. For regression with the absolute-residual score, this collapses to
 a simple symmetric interval: $\hat f(x_{n+1}) \pm \hat q$, where $\hat q$ is

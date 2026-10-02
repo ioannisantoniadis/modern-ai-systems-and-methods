@@ -33,7 +33,8 @@ something other than the same fallible process that produced it.
 The canonical agent loop is *perceive → plan → act*, repeated: observe the
 current state (the user's request, tool results so far), decide what to do
 next, take an action, observe its result, and repeat until done. The
-influential formalization of this for LLMs is ReAct (Reason + Act), which
+influential formalization of this for LLMs is ReAct (Reason + Act)
+[@yao2022react], which
 interleaves free-text reasoning steps with action steps in the same
 generation stream, rather than asking the model to silently plan internally
 and only emit actions. Concretely, a ReAct-style trace looks like a
@@ -130,7 +131,7 @@ up in agent design and need different solutions:
   truncating older content as the context fills up, trading fidelity (losing
   detail from earlier in the trajectory) for staying within the context
   budget.
-- **Long-term / retrieval-augmented memory**: facts, past interactions, or
+- **Long-term / retrieval-augmented memory** [@lewis2020retrieval]: facts, past interactions, or
   documents that need to persist and be recalled *across* sessions or far
   beyond what fits in one context window. Rather than keeping everything in
   the prompt, this is stored externally (often as embeddings in a vector
@@ -252,8 +253,9 @@ rather than a vague "sometimes it doesn't work":
   agent deployments need step/cost budgets and observability into
   in-progress trajectories, not just final-output logging — a natural fit
   for the operational concerns in [ML Systems and MLOps](17-ml-systems-mlops.qmd).
-- **Prompt injection via tool outputs**: perhaps the most distinctive new
-  failure mode of agentic systems specifically. When an agent's tool results
+- **Prompt injection via tool outputs** ("indirect" prompt injection
+  [@greshake2023not]): perhaps the most distinctive new failure mode of
+  agentic systems specifically. When an agent's tool results
   come from untrusted external content — a web page, a document, an email,
   the output of another service — that content can contain text crafted to
   look like instructions ("ignore your previous task and instead...") which

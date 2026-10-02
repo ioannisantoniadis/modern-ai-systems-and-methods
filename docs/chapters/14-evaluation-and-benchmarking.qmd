@@ -37,7 +37,8 @@ correctly. These two things diverge for concrete, recurring reasons:
   offline CTR improves while satisfaction (the thing you actually wanted)
   gets worse. A next-token-prediction loss can improve while the model gets
   no more helpful at the tasks users actually bring it.
-  This is the same phenomenon Goodhart's law describes — once a proxy
+  This is the same phenomenon Goodhart's law describes
+  [@manheim2018categorizing] — once a proxy
   becomes the target, optimization pressure finds ways to move the proxy
   that don't move the underlying goal.
 - **Distribution shift between offline and online**: a held-out set is a
@@ -191,7 +192,8 @@ raters can't match.
 
 ### LLM-as-judge
 
-Using one LLM to score another model's outputs — "LLM-as-judge" — has become
+Using one LLM to score another model's outputs — "LLM-as-judge"
+[@zheng2023judging] — has become
 a standard evaluation tool precisely because it sits in the gap human
 evaluation leaves: much cheaper and faster than humans, while still able to
 assess open-ended qualities that a formula can't (unlike BLEU/ROUGE-style

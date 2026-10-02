@@ -6,12 +6,16 @@ book:
   title: "Modern AI Systems and Methods"
   subtitle: "A field guide to how modern AI actually fits together"
   description: >-
-    Nineteen chapters mapping supervised learning through agents, evaluation,
+    Eighteen chapters and a map, covering supervised learning through agents, evaluation,
     and responsible AI — real computed visualizations, not diagrams, and every
     chapter linked to the ones around it.
   site-url: "https://ioannisantoniadis.github.io/modern-ai-systems-and-methods/"
   repo-url: "https://github.com/ioannisantoniadis/modern-ai-systems-and-methods"
   repo-actions: [edit, issue]
+  image: images/social-preview.png
+  open-graph: true
+  twitter-card:
+    card-style: summary_large_image
   page-footer:
     left: >-
       Source on [GitHub](https://github.com/ioannisantoniadis/modern-ai-systems-and-methods).

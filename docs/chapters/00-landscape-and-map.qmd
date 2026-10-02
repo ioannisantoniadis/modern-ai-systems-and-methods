@@ -1,6 +1,4 @@
----
-title: "The Map"
----
+# The Map {.unnumbered}
 
 Modern AI is easiest to misread as a single ladder: classical ML at the
 bottom, deep learning in the middle, LLMs at the top, everything else a
